@@ -47,7 +47,8 @@ Start here:
 Use this if your framework models tools as shell commands returning JSON.
 
 ```bash
-npx zerion-cli wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+npm install -g zerion-cli
+zerion-cli wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 ```
 
 Start here:
@@ -76,8 +77,9 @@ Start here:
 ### CLI quickstart
 
 ```bash
+npm install -g zerion-cli
 export ZERION_API_KEY="zk_dev_..."
-npx zerion-cli wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+zerion-cli wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 ```
 
 Example output:
