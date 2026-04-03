@@ -21,24 +21,9 @@ function isEvmKey(key) {
 }
 
 const BASE58_RE = /^[1-9A-HJ-NP-Za-km-z]+$/;
+// Solana keypairs are 64 bytes; base58-encoded they are 87-88 characters
 function isSolanaKey(key) {
-  return !key.startsWith("0x") && BASE58_RE.test(key) && key.length >= 64;
-}
-
-function base58ToBytes(str) {
-  const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  const bytes = [];
-  for (const c of str) {
-    let carry = ALPHABET.indexOf(c);
-    for (let j = 0; j < bytes.length; j++) {
-      carry += bytes[j] * 58;
-      bytes[j] = carry & 0xff;
-      carry >>= 8;
-    }
-    while (carry > 0) { bytes.push(carry & 0xff); carry >>= 8; }
-  }
-  for (const c of str) { if (c === "1") bytes.push(0); else break; }
-  return new Uint8Array(bytes.reverse());
+  return !key.startsWith("0x") && BASE58_RE.test(key) && key.length >= 80;
 }
 
 let _x402Fetch = null;
@@ -60,6 +45,9 @@ async function getX402Fetch() {
   const client = new x402Client();
 
   if (evmKey) {
+    if (!isEvmKey(evmKey)) {
+      throw new Error("EVM_PRIVATE_KEY must be a 0x-prefixed hex string.");
+    }
     const { registerExactEvmScheme } = await import("@x402/evm/exact/client");
     const { privateKeyToAccount } = await import("viem/accounts");
     const signer = privateKeyToAccount(evmKey);
@@ -69,8 +57,8 @@ async function getX402Fetch() {
 
   if (solKey) {
     const { registerExactSvmScheme } = await import("@x402/svm/exact/client");
-    const { createKeyPairSignerFromBytes } = await import("@solana/kit");
-    const keyBytes = base58ToBytes(solKey);
+    const { createKeyPairSignerFromBytes, getBase58Codec } = await import("@solana/kit");
+    const keyBytes = getBase58Codec().encode(solKey);
     const signer = await createKeyPairSignerFromBytes(keyBytes);
     registerExactSvmScheme(client, { signer });
     debugLog(`x402 registered: Solana (${signer.address})`);
@@ -160,8 +148,9 @@ async function fetchAPI(pathname, params = {}, useX402 = false) {
   const fetchFn = useX402 ? await getX402Fetch() : fetch;
   let response = await fetchFn(url, { headers });
 
-  // Retry on x402 402 (Solana facilitator fee-payer rotation can cause transient failures)
-  for (let attempt = 1; useX402 && response.status === 402 && attempt <= 2; attempt++) {
+  // Retry on 402 only for Solana — facilitator fee-payer rotation can cause transient failures
+  const hasSolanaKey = !!(SOLANA_PRIVATE_KEY || isSolanaKey(WALLET_PRIVATE_KEY));
+  for (let attempt = 1; useX402 && hasSolanaKey && response.status === 402 && attempt <= 2; attempt++) {
     debugLog(`x402 payment failed, retry ${attempt}/2...`);
     response = await fetchFn(url, { headers });
   }
