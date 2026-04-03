@@ -36,16 +36,21 @@ Useful docs:
 
 ### Option B: x402 Pay-per-call
 
-**No API key needed.** Pay $0.01 USDC per request via the [x402 protocol](https://www.x402.org/). Supports EVM (Base) and Solana — the key format is auto-detected. The CLI handles the payment handshake automatically using your wallet's private key.
+**No API key needed.** Pay $0.01 USDC per request via the [x402 protocol](https://www.x402.org/). Supports EVM (Base) and Solana. The CLI handles the payment handshake automatically.
 
-Setup:
+**Single key** — format is auto-detected:
 
 ```bash
-# EVM (Base) — 0x-prefixed hex
-export WALLET_PRIVATE_KEY="0x..."
+export WALLET_PRIVATE_KEY="0x..."    # EVM (Base) — 0x-prefixed hex
+export WALLET_PRIVATE_KEY="5C1y..."  # Solana — base58 encoded keypair
+```
 
-# Solana — base58 encoded keypair
-export WALLET_PRIVATE_KEY="5C1y..."
+**Both chains simultaneously:**
+
+```bash
+export EVM_PRIVATE_KEY="0x..."
+export SOLANA_PRIVATE_KEY="5C1y..."
+export ZERION_X402_PREFER_SOLANA=true  # optional: prefer Solana when both are set
 ```
 
 Then use the `--x402` flag:

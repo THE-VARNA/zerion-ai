@@ -38,15 +38,22 @@ This repo's example configs assume an `Authorization: Bearer ...` header for the
 
 ### Option 2: x402 Pay-per-call
 
-No API key needed. Pay $0.01 USDC per request via the [x402 protocol](https://www.x402.org/). Supports EVM (Base) and Solana — auto-detected from key format.
+No API key needed. Pay $0.01 USDC per request via the [x402 protocol](https://www.x402.org/). Supports EVM (Base) and Solana.
+
+**Single key** — format is auto-detected:
 
 ```bash
-# EVM (Base) — 0x-prefixed hex
-export WALLET_PRIVATE_KEY="0x..."
+export WALLET_PRIVATE_KEY="0x..."    # EVM (Base) — 0x-prefixed hex
+export WALLET_PRIVATE_KEY="5C1y..."  # Solana — base58 encoded keypair
+export ZERION_X402=true
+```
 
-# Solana — base58 encoded keypair
-export WALLET_PRIVATE_KEY="5C1y..."
+**Both chains simultaneously:**
 
+```bash
+export EVM_PRIVATE_KEY="0x..."
+export SOLANA_PRIVATE_KEY="5C1y..."
+export ZERION_X402_PREFER_SOLANA=true  # optional: prefer Solana when both are set
 export ZERION_X402=true
 ```
 
