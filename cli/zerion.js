@@ -83,6 +83,21 @@ register("agent", "list-policies", agentListPolicies);
 register("agent", "show-policy", agentShowPolicy);
 register("agent", "delete-policy", agentDeletePolicy);
 
+// --- Treasury (autonomous guardian agent) ---
+
+import treasuryStart from "./commands/treasury/start.js";
+import treasuryStatus from "./commands/treasury/status.js";
+import treasuryEvaluate from "./commands/treasury/evaluate.js";
+import treasuryTrigger from "./commands/treasury/trigger.js";
+import treasuryPolicies from "./commands/treasury/policies.js";
+import treasuryKillSwitch from "./commands/treasury/kill-switch.js";
+register("treasury", "start", treasuryStart);
+register("treasury", "status", treasuryStatus);
+register("treasury", "evaluate", treasuryEvaluate);
+register("treasury", "trigger", treasuryTrigger);
+register("treasury", "policies", treasuryPolicies);
+register("treasury", "kill-switch", treasuryKillSwitch);
+
 // --- Config ---
 
 import configCmd from "./commands/config.js";

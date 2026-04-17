@@ -66,6 +66,14 @@ function printUsage() {
       "watch remove <name>": "Remove from watchlist",
       "analyze <name|address>": "Analyze wallet trading activity",
     },
+    treasury_agent: {
+      "treasury start [--dry-run]": "Start autonomous monitoring loop",
+      "treasury status": "Show agent status and recent activity",
+      "treasury evaluate [--verbose]": "Run single evaluation cycle (read-only)",
+      "treasury trigger [--dry-run]": "Manually trigger evaluate + execute cycle",
+      "treasury policies [--init]": "Show or initialize treasury policies",
+      "treasury kill-switch [on|off]": "Manage execution kill switch",
+    },
     other: {
       "chains": "List supported chains",
       "config set <key> <value>": "Set config (apiKey, defaultWallet, defaultChain, slippage)",
@@ -101,6 +109,8 @@ function printUsage() {
       "ZERION_X402": "Set 'true' to enable x402 globally",
       "SOLANA_RPC_URL": "Custom Solana RPC endpoint",
       "ETH_RPC_URL": "Custom Ethereum RPC endpoint (used for ENS resolution)",
+      "TREASURY_WALLET_PASSPHRASE": "Passphrase for treasury agent wallet signing",
+      "TREASURY_POLICY_PATH": "Custom path to treasury-policy.json",
     },
     config: {
       "agentToken": "Trading token (auto-saved by `agent create-token`)",

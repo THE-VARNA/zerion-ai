@@ -133,3 +133,108 @@ export async function getSwapFungibles(inputChainId, outputChainId, options = {}
     direction: "both",
   }, options.useX402);
 }
+
+// --- Wallet-set endpoints ---
+
+export async function getWalletSetPortfolio(addresses, options = {}) {
+  return fetchAPI("/wallet-sets/portfolio", {
+    addresses: addresses.join(","),
+    currency: options.currency || "usd",
+    "filter[positions]": options.positionFilter || "only_simple",
+  }, options.useX402);
+}
+
+export async function getWalletSetPositions(addresses, options = {}) {
+  const params = {
+    addresses: addresses.join(","),
+    "filter[positions]": options.positionFilter || "only_simple",
+    currency: options.currency || "usd",
+    sort: "value",
+  };
+  if (options.chainIds) params["filter[chain_ids]"] = options.chainIds;
+  return fetchAPI("/wallet-sets/positions/", params, options.useX402);
+}
+
+export async function getWalletSetTransactions(addresses, options = {}) {
+  return fetchAPI("/wallet-sets/transactions/", {
+    addresses: addresses.join(","),
+    "page[size]": options.limit || 10,
+    currency: options.currency || "usd",
+  }, options.useX402);
+}
+
+// --- Transaction subscription endpoints ---
+
+export async function createTxSubscription(callbackUrl, walletAddresses, chainIds = []) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    const err = new Error("ZERION_API_KEY is required for subscriptions.");
+    err.code = "missing_api_key";
+    throw err;
+  }
+
+  const body = {
+    callback_url: callbackUrl,
+    addresses: walletAddresses,
+  };
+  if (chainIds.length > 0) body.chain_ids = chainIds;
+
+  const url = `${API_BASE}/tx-subscriptions`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: basicAuthHeader(apiKey),
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(body),
+    signal: controller.signal,
+  });
+  clearTimeout(timer);
+
+  const payload = await response.json();
+  if (!response.ok) {
+    const err = new Error(`Subscription creation failed: ${response.status}`);
+    err.code = "subscription_error";
+    err.response = payload;
+    throw err;
+  }
+  return payload;
+}
+
+export async function listTxSubscriptions(options = {}) {
+  return fetchAPI("/tx-subscriptions", {}, options.useX402);
+}
+
+export async function deleteTxSubscription(subscriptionId, options = {}) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    const err = new Error("ZERION_API_KEY is required.");
+    err.code = "missing_api_key";
+    throw err;
+  }
+
+  const url = `${API_BASE}/tx-subscriptions/${encodeURIComponent(subscriptionId)}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: basicAuthHeader(apiKey),
+      Accept: "application/json",
+    },
+    signal: controller.signal,
+  });
+  clearTimeout(timer);
+
+  if (!response.ok && response.status !== 204) {
+    const err = new Error(`Subscription deletion failed: ${response.status}`);
+    err.code = "subscription_error";
+    throw err;
+  }
+  return { deleted: true, id: subscriptionId };
+}

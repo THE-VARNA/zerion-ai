@@ -1,202 +1,76 @@
-# zerion-ai
+# Policy-Bounded Autonomous Treasury Incident Responder
 
-**Maintained by Zerion.**
+**Built for the Zerion Frontier Hackathon**
 
-`zerion-ai` is the public, self-contained repo for using Zerion from AI agents and developer tools.
+This project is a direct extension of the `zeriontech/zerion-ai` CLI repository. It adds an autonomous treasury guardian agent that monitors a wallet set, evaluates portfolio data against defined safety policies, and auto-executes rebalancing transactions onchain via the Zerion API when a policy is breached.
 
-It packages two first-class integration paths:
+## Features
 
-- **Hosted MCP** for Cursor, Claude, and other MCP-native agent environments
-- **`zerion`** for OpenClaw-like and command-based agent runtimes
+- **Autonomous Monitoring:** Polls the Zerion API for state and listens for real-time `tx-subscriptions` webhook triggers.
+- **Fail-Closed Policy Engine:** Deterministic, non-AI policy evaluation. Enforces concentration limits, spend caps, chain-locks, and asset denylists. Uses chain-aware `fungible_id` matching.
+- **Secure Webhooks:** Minimal Node.js `http` server that strictly adheres to the official Zerion webhook verification guide (RSA-SHA256, domain validation).
+- **Safe Execution:** Selects the highest-output routes via the Zerion `/swap/offers/` endpoint. Enforces maximum slippage and uses the native unified CLI transaction signer (`signSwapTransaction` and `broadcastAndWait`).
+- **Complete Audit Trail:** Append-only JSONL event log built for hackathon judge inspectability.
+- **Safety Controls:** Idempotency deduplication, exponential backoff retries, robust timeout handling, and a strict local kill-switch.
 
-It ships two flagship workflows:
+## Installation & Setup
 
-- **`wallet-analysis`** — portfolio, positions, transactions, and PnL analysis (agent operation)
-- **`wallet-trading`** — swap, bridge, buy/sell tokens (agent operation); wallet setup, agent tokens, and policies (manual, requires passphrase)
+1. **Clone the repo and install dependencies:**
+   ```bash
+   npm install
+   ```
 
-![Wallet analysis demo](./assets/demo-wallet-analysis.svg)
-
-## 1. Choose your authentication method
-
-### Option A: API Key
-
-Get an API key and export it: [Get your API key](https://dashboard.zerion.io)
-
-```bash
-export ZERION_API_KEY="zk_dev_..."
-```
-
-- API auth via **HTTP Basic Auth**
-- dev keys beginning with `zk_dev_`
-- current dev-key limits of **120 requests/minute** and **5k requests/day**
-
-Useful docs:
-
-- [Build with AI](https://developers.zerion.io/reference/building-with-ai)
-- [Get Wallet Data With Zerion API](https://developers.zerion.io/reference/getting-started)
-
-### Option B: x402 Pay-per-call
-
-**No API key needed.** Pay $0.01 USDC per request via the [x402 protocol](https://www.x402.org/). Supports EVM (Base) and Solana. The CLI handles the payment handshake automatically.
-
-**Single key** — format is auto-detected:
-
-```bash
-export WALLET_PRIVATE_KEY="0x..."    # EVM (Base) — 0x-prefixed hex
-export WALLET_PRIVATE_KEY="5C1y..."  # Solana — base58 encoded keypair
-```
-
-**Both chains simultaneously:**
-
-```bash
-export EVM_PRIVATE_KEY="0x..."
-export SOLANA_PRIVATE_KEY="5C1y..."
-export ZERION_X402_PREFER_SOLANA=true  # optional: prefer Solana when both are set
-```
-
-Then use the `--x402` flag:
-
-```bash
-zerion wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --x402
-```
-
-Or enable x402 globally:
-
-```bash
-export ZERION_X402=true
-zerion wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
-```
-
-## 2. Install skills (Claude Code, Cursor, OpenClaw)
-
-```bash
-npx skills add zeriontech/zerion-ai
-```
-
-This installs 4 skills into your agent:
-
-| Skill | Description |
-|-------|-------------|
-| **wallet-analysis** | Analyze wallets: portfolio, positions, transactions, PnL |
-| **wallet-trading** | Swap, bridge, buy/sell tokens, wallets, agent tokens, policies |
-| **chains** | List supported blockchain networks |
-| **zerion** | CLI setup, authentication, and troubleshooting |
-
-The skills reference `zerion` which runs via `npx zerion` (no global install needed).
-
-## 3. Choose your integration path
-
-### MCP clients
-
-Use this if your agent runtime already supports MCP.
-
-Start here:
-
-- [Hosted MCP quickstart](./mcp/README.md)
-- [Cursor example](./examples/cursor/README.md)
-- [Claude example](./examples/claude/README.md)
-
-### OpenClaw and CLI-based agents
-
-Use this if your framework models tools as shell commands returning JSON.
-
-```bash
-npm install -g zerion
-zerion wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
-```
-
-Start here:
-
-- [OpenClaw example](./examples/openclaw/README.md)
-- [CLI usage](./cli/README.md)
-
-## 4. Run the first wallet analysis
-
-### MCP quickstart
-
-1. Export your API key:
-
+2. **Configure your environment (`.env`):**
    ```bash
    export ZERION_API_KEY="zk_dev_..."
+   export TREASURY_WALLET_PASSPHRASE="your_secret_passphrase"
+   export TREASURY_POLICY_PATH="~/.zerion/treasury-policy.json"
    ```
 
-2. Add the hosted Zerion MCP config from [examples/cursor/mcp.json](./examples/cursor/mcp.json) or [examples/claude/mcp.json](./examples/claude/mcp.json)
-3. Ask:
-
-   ```text
-   Analyze the wallet 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045.
-   Summarize total portfolio value, top positions, recent transactions, and PnL.
+3. **Initialize the treasury policy:**
+   ```bash
+   zerion treasury policies --init
+   # This generates a template at ~/.zerion/treasury-policy.json
    ```
 
-### CLI quickstart
+4. **Edit your policy:**
+   Configure your monitored `evmAddress` and rules (e.g. `concentration_limit`). See the template for structure.
 
-**With API key:**
+## Usage
 
+**Start the autonomous agent loop:**
 ```bash
-npm install -g zerion
-export ZERION_API_KEY="zk_dev_..."
-zerion wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+zerion treasury start
 ```
 
-**With x402 (no API key needed):**
-
+**View live agent status and activity:**
 ```bash
-npm install -g zerion
-export WALLET_PRIVATE_KEY="0x..."   # or base58 for Solana
-zerion wallet analyze 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 --x402
+zerion treasury status
 ```
 
-Example output:
-
-```json
-{
-  "wallet": {
-    "query": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-  },
-  "portfolio": {
-    "total": 450000,
-    "currency": "usd"
-  },
-  "positions": {
-    "count": 42
-  },
-  "transactions": {
-    "sampled": 10
-  },
-  "pnl": {
-    "available": true
-  }
-}
+**Run a read-only evaluation:**
+```bash
+zerion treasury evaluate --verbose
 ```
 
-## Example wallets
+**Manually trigger an execution cycle:**
+```bash
+zerion treasury trigger
+```
 
-This repo uses the same public wallets across examples:
+**Emergency Stop:**
+```bash
+zerion treasury kill-switch on
+# To resume: zerion treasury kill-switch off
+```
 
-- `vitalik.eth` / `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`
-- ENS DAO treasury / `0xFe89Cc7Abb2C4183683Ab71653c4cCd1b9cC194e`
-- Aave collector / `0x25F2226B597E8F9514B3F68F00F494CF4F286491`
+## Architecture
 
-## What ships in this repo
+This extension adds a new `treasury` command family to the existing `zerion` unified CLI router while preserving the repository's native patterns. 
 
-- [`skills/`](./skills/): 4 agent skills installable via `npx skills add zeriontech/zerion-ai`
-  - [`wallet-analysis/`](./skills/wallet-analysis/SKILL.md): portfolio, positions, transactions, and PnL analysis
-  - [`wallet-trading/`](./skills/wallet-trading/SKILL.md): swap, bridge, buy/sell, wallets, agent tokens, policies
-  - [`chains/`](./skills/chains/SKILL.md): supported blockchain networks reference
-  - [`zerion/`](./skills/zerion/SKILL.md): CLI setup, auth, and troubleshooting
-- [`mcp/`](./mcp/README.md): hosted Zerion MCP setup plus the tool catalog
-- [`cli/`](./cli/): `zerion` unified CLI — wallet analysis + trading (published to npm)
-- [`examples/`](./examples/): Cursor, Claude, OpenAI Agents SDK, raw HTTP, and OpenClaw setups
+- **Data Fetching:** Handled by extending `cli/lib/api/client.js` with `wallet-sets/portfolio` and `wallet-sets/positions`.
+- **Policy Engine:** Located at `cli/lib/treasury/policy-engine.js`. It parses the USD-value state of the portfolio entirely synchronously.
+- **Execution Pipeline:** Extends the codebase's existing `cli/lib/trading/` utilities to sign and broadcast. No custom execution logic was invented; we pass the `transaction` object exactly as supplied by the Zerion `/swap/offers/` API.
 
-## Failure modes to expect
-
-Both the MCP and CLI surfaces should handle:
-
-- missing or invalid API key
-- invalid wallet address
-- unsupported chain filter
-- empty wallets / no positions
-- rate limits (`429`)
-- upstream timeout or temporary unavailability
-
-See [mcp/README.md](./mcp/README.md) and [cli/README.md](./cli/README.md) for the concrete behavior used in this repo.
+**Why no AI in the execution path?** 
+For an institutional treasury responding to real-time exploits or drift, deterministic execution is critical. This agent guarantees that transactions hit the chain _only_ if mathematically supported by the Zerion API state and explicitly allowed by the operator's predefined parameters.
