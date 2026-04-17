@@ -1,76 +1,84 @@
-# Policy-Bounded Autonomous Treasury Incident Responder
+# Policy-Bounded Autonomous Treasury Responder
 
 **Built for the Zerion Frontier Hackathon**
 
-This project is a direct extension of the `zeriontech/zerion-ai` CLI repository. It adds an autonomous treasury guardian agent that monitors a wallet set, evaluates portfolio data against defined safety policies, and auto-executes rebalancing transactions onchain via the Zerion API when a policy is breached.
+This project extends the `zeriontech/zerion-ai` CLI, transforming it from a manual tool into an **Autonomous Treasury Guardian**. It monitors a multi-chain wallet-set, evaluates positions against a deterministic safety policy, and auto-executes rebalancing or stop-loss transactions onchain via the Zerion API.
 
-## Features
+## Quick Setup
 
-- **Autonomous Monitoring:** Polls the Zerion API for state and listens for real-time `tx-subscriptions` webhook triggers.
-- **Fail-Closed Policy Engine:** Deterministic, non-AI policy evaluation. Enforces concentration limits, spend caps, chain-locks, and asset denylists. Uses chain-aware `fungible_id` matching.
-- **Secure Webhooks:** Minimal Node.js `http` server that strictly adheres to the official Zerion webhook verification guide (RSA-SHA256, domain validation).
-- **Safe Execution:** Selects the highest-output routes via the Zerion `/swap/offers/` endpoint. Enforces maximum slippage and uses the native unified CLI transaction signer (`signSwapTransaction` and `broadcastAndWait`).
-- **Complete Audit Trail:** Append-only JSONL event log built for hackathon judge inspectability.
-- **Safety Controls:** Idempotency deduplication, exponential backoff retries, robust timeout handling, and a strict local kill-switch.
+*(Standard Zerion CLI setup applies. See the [official docs](https://github.com/zeriontech/zerion-ai) for auth details).*
 
-## Installation & Setup
+```bash
+npm install
+export ZERION_API_KEY="zk_dev_..."
+export TREASURY_WALLET_PASSPHRASE="your_secret_passphrase"
+```
 
-1. **Clone the repo and install dependencies:**
+## The Policy System
+
+This agent runs on **Fail-Closed Determinism**. There are no "god-mode" AI agents hallucinating trades. An AI acts as the *configuration copilot*, while the fast, zero-dependency Node daemon strictly handles math and API execution.
+
+Initialize your policy file: `zerion treasury policies --init` (creates `~/.zerion/treasury-policy.json`).
+
+### 1. Stop-Loss (Risk Liquidation)
+Automatically exit a position if the market crashes below a trigger price.
+```json
+{
+  "type": "stop_loss",
+  "asset": "pepe",
+  "triggerPriceUsd": 0.005,
+  "sellTo": "usdc"
+}
+```
+
+### 2. Concentration Limit (Auto-Rebalance)
+Ensure no single asset exceeds your risk parameters.
+```json
+{
+  "type": "concentration_limit",
+  "asset": "eth",
+  "maxPercent": 40,
+  "rebalanceTarget": 30,
+  "rebalanceTo": "usdc"
+}
+```
+
+All policies are guarded by a **Safety Cage** in the JSON: `spendCapUsd` (e.g., max $500 per trade) and `allowedChains` (e.g., `["polygon", "base"]`).
+
+## Hackathon Demo Flow
+
+Want to see it work? Here is the exact path to demonstrate a real onchain transaction on a cheap L2 (like Polygon or Base).
+
+1. **Configure the Threat**: Add a `stop_loss` for a token you hold (minimum $1 worth). Set the `triggerPriceUsd` *higher* than the current market price so the agent believes a crash is happening.
+2. **Review the State**: 
    ```bash
-   npm install
+   zerion treasury evaluate --pretty
    ```
-
-2. **Configure your environment (`.env`):**
+   *Watch the high-contrast dashboard detect the "Crash" and formulate an exact `/swap/offers/` route.*
+3. **Trigger Execution**:
    ```bash
-   export ZERION_API_KEY="zk_dev_..."
-   export TREASURY_WALLET_PASSPHRASE="your_secret_passphrase"
-   export TREASURY_POLICY_PATH="~/.zerion/treasury-policy.json"
+   zerion treasury trigger
    ```
-
-3. **Initialize the treasury policy:**
+   *The agent will sign the ECDSA transaction locally and broadcast it.*
+4. **View the Audit Log**:
    ```bash
-   zerion treasury policies --init
-   # This generates a template at ~/.zerion/treasury-policy.json
+   zerion treasury status
    ```
+   *The dashboard will display the confirmed onchain Hash.*
 
-4. **Edit your policy:**
-   Configure your monitored `evmAddress` and rules (e.g. `concentration_limit`). See the template for structure.
+### Autonomous Mode
 
-## Usage
-
-**Start the autonomous agent loop:**
+To let the agent run continuously in the background (polling every 60s and listening to Zerion Webhooks):
 ```bash
 zerion treasury start
 ```
 
-**View live agent status and activity:**
-```bash
-zerion treasury status
-```
+*Emergency Kill-switch: `zerion treasury kill-switch on`*
 
-**Run a read-only evaluation:**
-```bash
-zerion treasury evaluate --verbose
-```
+## AI Copilot Integration (MCP & OpenClaw)
 
-**Manually trigger an execution cycle:**
-```bash
-zerion treasury trigger
-```
+This agent exposes its architecture to GenAI! 
+- We built the `treasury-guardian` OpenClaw skill (`skills/treasury-guardian/SKILL.md`).
+- We exported `mcp/tools/treasury-status.json`, `evaluate.json`, and `policies.json`.
 
-**Emergency Stop:**
-```bash
-zerion treasury kill-switch on
-# To resume: zerion treasury kill-switch off
-```
-
-## Architecture
-
-This extension adds a new `treasury` command family to the existing `zerion` unified CLI router while preserving the repository's native patterns. 
-
-- **Data Fetching:** Handled by extending `cli/lib/api/client.js` with `wallet-sets/portfolio` and `wallet-sets/positions`.
-- **Policy Engine:** Located at `cli/lib/treasury/policy-engine.js`. It parses the USD-value state of the portfolio entirely synchronously.
-- **Execution Pipeline:** Extends the codebase's existing `cli/lib/trading/` utilities to sign and broadcast. No custom execution logic was invented; we pass the `transaction` object exactly as supplied by the Zerion `/swap/offers/` API.
-
-**Why no AI in the execution path?** 
-For an institutional treasury responding to real-time exploits or drift, deterministic execution is critical. This agent guarantees that transactions hit the chain _only_ if mathematically supported by the Zerion API state and explicitly allowed by the operator's predefined parameters.
+**Try it:** Open Claude or Cursor and type: *"Guardian, check if my treasury has any breaches. If not, update my policy to add a $1500 stop-loss for ETH."* The AI will natively read the state and rewrite your JSON policy file for you!
