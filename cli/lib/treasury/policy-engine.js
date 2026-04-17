@@ -91,6 +91,9 @@ export function evaluatePolicies({
       case "asset_denylist":
         evaluateAssetDenylist(policy, positions, breaches);
         break;
+      case "stop_loss":
+        evaluateStopLoss(policy, positions, breaches);
+        break;
       default:
         // Unknown policy type — log but don't block
         break;
@@ -189,6 +192,52 @@ function evaluateAssetDenylist(policy, positions, breaches) {
         asset: fungibleId || symbol,
         value: p.attributes?.value || 0,
         action: "alert",
+      });
+    }
+  }
+}
+
+/**
+ * Stop-loss limit: liquidate position if price falls below trigger threshold.
+ */
+function evaluateStopLoss(policy, positions, breaches) {
+  const { asset, triggerPriceUsd, sellTo, sellToChain } = policy;
+
+  const matching = positions.filter((p) => {
+    const info = p.attributes?.fungible_info || {};
+    const fungibleId = p.relationships?.fungible?.data?.id;
+    if (fungibleId && fungibleId === asset) return true;
+    if (info.symbol && info.symbol.toLowerCase() === asset.toLowerCase()) return true;
+    return false;
+  });
+
+  for (const p of matching) {
+    const price = p.attributes?.price;
+    const value = p.attributes?.value;
+    
+    // Only care if we hold the asset and it has a price
+    if (!price || value <= 0) continue;
+
+    if (price <= triggerPriceUsd) {
+      const sourceChain = p.relationships?.chain?.data?.id || "ethereum";
+      
+      breaches.push({
+        policy: "stop_loss",
+        reason: `${asset} price $${price} dropped to or below stop-loss trigger $${triggerPriceUsd}`,
+        asset,
+        assetValue: value,
+        actualPercent: 0,
+        threshold: triggerPriceUsd,
+        excessValueUsd: value, // liquidate the whole position
+        action: "rebalance",
+        rebalance: {
+          sellAsset: asset,
+          sellAmountUsd: value,
+          buyAsset: sellTo || "usdc",
+          buyChain: sellToChain || sourceChain,
+          sourceChain,
+          targetPercent: 0,
+        },
       });
     }
   }

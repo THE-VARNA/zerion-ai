@@ -1,0 +1,10 @@
+{
+  "name": "treasury-policies",
+  "description": "Reads the local treasury-policy.json defining the rule-bounds (e.g. concentration limits, stop-loss) for the autonomous guardian execution.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "cli": "zerion treasury policies"
+}

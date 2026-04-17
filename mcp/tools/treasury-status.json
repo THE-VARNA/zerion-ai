@@ -1,0 +1,10 @@
+{
+  "name": "treasury-status",
+  "description": "Returns the live autonomous treasury guardian state, including kill switch status and recent policy evaluation bounds.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "cli": "zerion treasury status"
+}

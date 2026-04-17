@@ -48,7 +48,28 @@ export default async function treasuryStatus(args, flags) {
     })),
   };
 
-  print(status);
+  print(status, (data) => {
+    const K = data.agent.killSwitch === "ACTIVE" 
+      ? "\x1b[31mACTIVE (Arrested)\x1b[0m" : "\x1b[32minactive (Running properly)\x1b[0m";
+    
+    let out = `\n\x1b[1m=== TREASURY GUARDIAN STATUS ===\x1b[0m\n\n`;
+    out += `Kill Switch: ${K}\n`;
+    out += `Audit Log:   ${data.agent.auditLogPath}\n\n`;
+    out += `\x1b[1mRecent Activity (Last ${data.recentActivity.lastNEntries} cycles)\x1b[0m\n`;
+    out += `Triggers:    ${data.recentActivity.triggers}\n`;
+    out += `Breaches:    \x1b[${data.recentActivity.breaches > 0 ? "31" : "32"}m${data.recentActivity.breaches}\x1b[0m\n`;
+    out += `Executions:  \x1b[36m${data.recentActivity.executions}\x1b[0m\n`;
+    out += `Failures:    ${data.recentActivity.failures > 0 ? `\x1b[31m${data.recentActivity.failures}\x1b[0m` : "0"}\n\n`;
+    out += `\x1b[1mLast 5 Events:\x1b[0m\n`;
+    for (const e of data.recentEvents) {
+      out += ` [${new Date(e.time).toLocaleTimeString()}] ${e.event.padEnd(20)} `;
+      if (e.event === "breach_detected") out += `\x1b[31m${e.data.reason}\x1b[0m\n`;
+      else if (e.event === "tx_confirmed") out += `\x1b[32mConfirmed: ${e.data.hash}\x1b[0m\n`;
+      else if (e.event === "policy_evaluated" && e.data.breaches === 0) out += `\x1b[32mClean\x1b[0m\n`;
+      else out += `${JSON.stringify(e.data)}\n`;
+    }
+    return out;
+  });
 }
 
 function summarizeEventData(entry) {

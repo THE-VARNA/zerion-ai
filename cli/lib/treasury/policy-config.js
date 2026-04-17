@@ -78,6 +78,9 @@ export function loadTreasuryConfig() {
     if (p.type === "concentration_limit") {
       if (typeof p.maxPercent !== "number") errors.push(`policies[${i}] concentration_limit requires 'maxPercent' (number)`);
       if (!p.asset) errors.push(`policies[${i}] concentration_limit requires 'asset' (fungible_id or symbol)`);
+    } else if (p.type === "stop_loss") {
+      if (typeof p.triggerPriceUsd !== "number") errors.push(`policies[${i}] stop_loss requires 'triggerPriceUsd' (number)`);
+      if (!p.asset) errors.push(`policies[${i}] stop_loss requires 'asset' (fungible_id or symbol)`);
     }
   }
 
@@ -137,6 +140,12 @@ export function getSamplePolicyJson() {
         rebalanceTarget: 30,
         rebalanceTo: "usdc",
         rebalanceToChain: "ethereum",
+      },
+      {
+        type: "stop_loss",
+        asset: "pepe",
+        triggerPriceUsd: 0.005,
+        sellTo: "usdc",
       },
     ],
     allowedChains: ["ethereum", "base", "arbitrum", "optimism", "polygon"],

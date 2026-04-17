@@ -205,8 +205,14 @@ export async function createTxSubscription(callbackUrl, walletAddresses, chainId
   return payload;
 }
 
-export async function listTxSubscriptions(options = {}) {
-  return fetchAPI("/tx-subscriptions", {}, options.useX402);
+export async function listTxSubscriptions() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    const err = new Error("ZERION_API_KEY is required for subscriptions.");
+    err.code = "missing_api_key";
+    throw err;
+  }
+  return fetchAPI("/tx-subscriptions", {}, false);
 }
 
 export async function deleteTxSubscription(subscriptionId, options = {}) {

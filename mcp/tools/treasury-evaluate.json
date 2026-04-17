@@ -1,0 +1,15 @@
+{
+  "name": "treasury-evaluate",
+  "description": "Trigger a read-only evaluation cycle against the live Zerion API to view current wallet-set values against the boundaries. Reports breaches but does not execute.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "verbose": {
+        "type": "boolean",
+        "description": "Output full position mappings"
+      }
+    },
+    "required": []
+  },
+  "cli": "zerion treasury evaluate [--verbose]"
+}

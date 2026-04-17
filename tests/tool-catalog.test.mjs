@@ -15,7 +15,10 @@ const EXPECTED_FILES = [
   "chains-list.json",
   "swap.json",
   "wallet-create.json",
-  "search.json"
+  "search.json",
+  "treasury-status.json",
+  "treasury-evaluate.json",
+  "treasury-policies.json"
 ];
 
 function loadTool(filename) {
@@ -25,7 +28,7 @@ function loadTool(filename) {
 describe("tool catalog", () => {
   it("has all 8 expected tool files", () => {
     const files = readdirSync(toolsDir).filter((f) => f.endsWith(".json"));
-    assert.equal(files.length, 8);
+    assert.equal(files.length, 11);
     for (const expected of EXPECTED_FILES) {
       assert.ok(files.includes(expected), `Missing tool file: ${expected}`);
     }
@@ -44,7 +47,10 @@ describe("tool catalog", () => {
   const CLI_TOOLS = [
     "swap.json",
     "wallet-create.json",
-    "search.json"
+    "search.json",
+    "treasury-status.json",
+    "treasury-evaluate.json",
+    "treasury-policies.json"
   ];
 
   describe("API tool schema", () => {

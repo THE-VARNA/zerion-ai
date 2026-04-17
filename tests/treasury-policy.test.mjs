@@ -88,6 +88,36 @@ test("evaluatePolicies - asset denylist match", (t) => {
   assert.strictEqual(result.breaches[0].policy, "asset_denylist");
 });
 
+test("evaluatePolicies - stop loss", (t) => {
+  const policies = [
+    {
+      type: "stop_loss",
+      asset: "pepe",
+      triggerPriceUsd: 0.10,
+      sellTo: "usdc"
+    }
+  ];
+
+  const positions = [
+    {
+      relationships: { fungible: { data: { id: "pepe" } }, chain: { data: { id: "ethereum" } } },
+      attributes: { value: 50, price: 0.05, fungible_info: { symbol: "PEPE" } } 
+    },
+    {
+      relationships: { fungible: { data: { id: "safe_asset" } } },
+      attributes: { value: 100, price: 100 }
+    }
+  ];
+
+  const result = evaluatePolicies({ positions, totalValue: 150, policies });
+  
+  assert.strictEqual(result.passed, false);
+  assert.strictEqual(result.breaches.length, 1);
+  assert.strictEqual(result.breaches[0].policy, "stop_loss");
+  assert.strictEqual(result.breaches[0].action, "rebalance");
+  assert.strictEqual(result.breaches[0].rebalance.sellAmountUsd, 50);
+});
+
 test("validateExecution - safety controls", (t) => {
   const valid = validateExecution({
     chain: "ethereum",

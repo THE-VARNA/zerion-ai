@@ -44,7 +44,36 @@ export default async function treasuryEvaluate(args, flags) {
       }));
     }
 
-    print(output);
+    print(output, (data) => {
+      let out = `\n\x1b[1m=== TREASURY EVALUATION CYCLE: ${data.cycleId.slice(0, 8)} ===\x1b[0m\n\n`;
+      out += `Total Portfolio Value: $${(data.portfolio.totalValue || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n`;
+      out += `Positions Evaluated:   ${data.positionCount}\n\n`;
+      
+      out += `\x1b[1mPolicy Results:\x1b[0m\n`;
+      if (data.evaluation.passed) {
+        out += `\x1b[32m [√] PASSED: All treasury parameters are within bounds.\x1b[0m\n`;
+      } else {
+        out += `\x1b[31m [X] FAILED: Treasury bounds breached!\x1b[0m\n\n`;
+        for (const [i, b] of data.evaluation.breaches.entries()) {
+          out += `  \x1b[31m${i + 1}. [${b.policy.toUpperCase()}] ${b.reason}\x1b[0m\n`;
+          if (b.action === "rebalance") {
+            out += `     -> Action: REBALANCE $${b.rebalance.sellAmountUsd.toLocaleString()} ${b.rebalance.sellAsset} => ${b.rebalance.buyAsset}\n`;
+          } else {
+            out += `     -> Action: ${b.action.toUpperCase()}\n`;
+          }
+        }
+      }
+      
+      if (data.positions) {
+        out += `\n\x1b[1mTop Evaluated Positions:\x1b[0m\n`;
+        for (const p of data.positions.slice(0, 5)) {
+          out += ` - ${(p.asset || "Unknown").padEnd(10)}: $${parseFloat(p.value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n`;
+        }
+        if (data.positions.length > 5) out += ` - ... and ${data.positions.length - 5} more\n`;
+      }
+      
+      return out;
+    });
   } catch (err) {
     printError(err.code || "evaluation_error", err.message, {
       suggestion: err.code === "missing_treasury_config"
