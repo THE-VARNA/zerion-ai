@@ -2,8 +2,11 @@
  * treasury judge-path — the ultimate "story" trace for hackathon judges.
  *
  * This command runs a full simulate cycle and prints a comprehensive
- * end-to-end report of the decision logic.
+ * end-to-end report of the decision logic. Displays final state, execution outcome,
+ * and either a verified on-chain transaction (tx hash) or a clearly labeled
+ * NON-EXECUTED PROOF artifact.
  */
+
 
 import { runFullCycle } from "../../lib/treasury/executor.js";
 import { print, printError } from "../../lib/util/output.js";
@@ -90,7 +93,8 @@ export default async function treasuryJudgePath(args, flags) {
         for (const r of res.results) {
           if (r.dryRun && r.offer) {
             out += `\x1b[1m│\x1b[0m ${p(`     Action: REBALANCE via ${r.offer.source.toUpperCase()}`, 70)} \x1b[1m│\x1b[0m\n`;
-            out += `\x1b[1m│\x1b[0m ${p(`     Proof:  Signed Transaction JSON (Execution Artifact)`, 70)} \x1b[1m│\x1b[0m\n`;
+            out += `\x1b[1m│\x1b[0m ${p(`     Proof:  NON-EXECUTED PROOF (Signed Transaction JSON)`, 70)} \x1b[1m│\x1b[0m\n`;
+
           } else if (r.status === "executed") {
             out += `\x1b[1m│\x1b[0m ${p(`     \x1b[32m✓ CONFIRMED: On-Chain Hash ${r.hash?.slice(0, 20)}...\x1b[0m`, 70)} \x1b[1m│\x1b[0m\n`;
           } else if (r.error) {
