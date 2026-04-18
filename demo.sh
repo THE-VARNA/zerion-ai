@@ -34,6 +34,7 @@ node cli/zerion.js treasury kill-switch off
 
 # 4. Deterministic Trace (The Judge's Trace)
 echo -e "\n\x1b[1m4. Generating the Deterministic Judge Trace...\x1b[0m"
+echo -e "\x1b[2m(Evaluating Concentration Limits & Stop-Loss triggers)\x1b[0m"
 echo -e "\x1b[2m(Filtering for Top 5 positions by value for UI clarity)\x1b[0m"
 node cli/zerion.js treasury judge-path
 

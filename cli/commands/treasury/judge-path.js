@@ -26,7 +26,7 @@ export default async function treasuryJudgePath(args, flags) {
       const totalVal = res.portfolio?.data?.attributes?.total?.positions || res.evaluation?.totalValue || 0;
       
       // Determine the final state
-      let finalState = "SAFE → NO ACTION";
+      let finalState = "CLEAN → NO ACTION REQUIRED";
       let stateColor = "\x1b[32m";
       if (res.blocked) {
         finalState = "BREACH → BLOCKED";
@@ -48,8 +48,10 @@ export default async function treasuryJudgePath(args, flags) {
 
 
       // 2. POLICY INPUTS
+      const stopLossCount = policies.filter(p => p.type === "stop_loss").length;
       out += `\x1b[1m│\x1b[0m ${p(` [1] POLICY OPERATIONAL BOUNDS`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(`     Rules Loaded: ${policies.length} deterministic rules`, 70)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(`     Stop-Loss:    ${stopLossCount} active price triggers`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(`     Spend Cap:    $${config.spendCapUsd || 0} USD`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(`     Safe Min:     ${config.slippagePercent || 0}% price slippage`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m├────────────────────────────────────────────────────────────────────────┤\x1b[0m\n`;
@@ -78,8 +80,8 @@ export default async function treasuryJudgePath(args, flags) {
       }
       out += `\x1b[1m├────────────────────────────────────────────────────────────────────────┤\x1b[0m\n`;
 
-      // 5. EXECUTION ARTIFACT
-      out += `\x1b[1m│\x1b[0m ${p(` [4] EXECUTION PROOF (On-Chain Artifact)`, 70)} \x1b[1m│\x1b[0m\n`;
+      // 5. EXECUTION PROOF & ON-CHAIN ARTIFACTS
+      out += `\x1b[1m│\x1b[0m ${p(` [4] EXECUTION PROOF & ON-CHAIN ARTIFACTS`, 70)} \x1b[1m│\x1b[0m\n`;
       if (res.blocked) {
         out += `\x1b[1m│\x1b[0m ${p(`     \x1b[33m⚠ BLOCKED: Safety Kill-Switch is ACTIVE.\x1b[0m`, 70)} \x1b[1m│\x1b[0m\n`;
         out += `\x1b[1m│\x1b[0m ${p(`     Reason: System arrest required for audit/bypass.`, 70)} \x1b[1m│\x1b[0m\n`;
@@ -87,21 +89,21 @@ export default async function treasuryJudgePath(args, flags) {
         for (const r of res.results) {
           if (r.dryRun && r.offer) {
             out += `\x1b[1m│\x1b[0m ${p(`     Action: REBALANCE via ${r.offer.source.toUpperCase()}`, 70)} \x1b[1m│\x1b[0m\n`;
-            out += `\x1b[1m│\x1b[0m ${p(`     Proof:  Signed Transaction JSON Generated`, 70)} \x1b[1m│\x1b[0m\n`;
+            out += `\x1b[1m│\x1b[0m ${p(`     Proof:  Signed Transaction JSON (Execution Proof)`, 70)} \x1b[1m│\x1b[0m\n`;
           } else if (r.status === "executed") {
-            out += `\x1b[1m│\x1b[0m ${p(`     \x1b[32m✓ CONFIRMED: Transaction Hash ${r.hash?.slice(0, 20)}...\x1b[0m`, 70)} \x1b[1m│\x1b[0m\n`;
+            out += `\x1b[1m│\x1b[0m ${p(`     \x1b[32m✓ CONFIRMED: On-Chain Hash ${r.hash?.slice(0, 20)}...\x1b[0m`, 70)} \x1b[1m│\x1b[0m\n`;
           } else if (r.error) {
             out += `\x1b[1m│\x1b[0m ${p(`     \x1b[31m✖ ABORTED: ${r.message || r.error}\x1b[0m`, 70)} \x1b[1m│\x1b[0m\n`;
           }
         }
       } else {
-        const msg = res.evaluation?.passed ? "No remediation route needed for CLEAN state." : "Manual intervention required: No automated route found.";
+        const msg = res.evaluation?.passed ? "No remediation needed for CLEAN state." : "Manual intervention required: No automated route found.";
         out += `\x1b[1m│\x1b[0m ${p(`     Status: ${msg}`, 70)} \x1b[1m│\x1b[0m\n`;
       }
       out += `\x1b[1m├────────────────────────────────────────────────────────────────────────┤\x1b[0m\n`;
 
       // 6. AUDIT TRAIL
-      out += `\x1b[1m│\x1b[0m ${p(` [5] VERIFIABLE AUDIT TRAIL`, 70)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` [5] APPEND-ONLY TRANSACTION AUDIT LOG`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(`     Log Location: ~/.zerion/treasury-audit.jsonl`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(`     Status:       Verified & Finalized`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m└────────────────────────────────────────────────────────────────────────┘\x1b[0m\n`;

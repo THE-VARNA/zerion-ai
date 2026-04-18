@@ -153,6 +153,7 @@ export async function runFullCycle(options = {}) {
     return {
       cycleId,
       status: "clean",
+      config,
       message: "All policies passed — no action needed",
       evaluation: evaluation.summary,
     };

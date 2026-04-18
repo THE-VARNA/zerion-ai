@@ -78,14 +78,17 @@ export default async function treasuryPolicies(args, flags) {
       out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(` ACTIVE RULES: ${data.policies.length}`, 56)} \x1b[1m│\x1b[0m\n`;
       for (const pol of data.policies) {
-        const row = ` - [${pol.type.toUpperCase()}] on ${pol.asset.toUpperCase()}`;
+        let row = ` - [${pol.type.toUpperCase()}] on ${pol.asset.toUpperCase()}`;
+        if (pol.type === "stop_loss") {
+          row += ` @ $${pol.triggerPriceUsd}`;
+        }
         out += `\x1b[1m│\x1b[0m ${p(row, 56)} \x1b[1m│\x1b[0m\n`;
       }
       
       out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(` GLOBAL CONSTRAINTS:`, 56)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(` - Spend Cap:  $${data.constraints.spendCapUsd}`, 56)} \x1b[1m│\x1b[0m\n`;
-      out += `\x1b[1m│\x1b[0m ${p(` - Slippage:   $${data.constraints.slippagePercent}%`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` - Slippage:   ${data.constraints.slippagePercent}%`, 56)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(` - Poll Int:   ${data.monitoring.pollIntervalMs}ms`, 56)} \x1b[1m│\x1b[0m\n`;
       
       out += `\x1b[1m└──────────────────────────────────────────────────────────┘\x1b[0m\n`;
