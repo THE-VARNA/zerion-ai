@@ -71,6 +71,7 @@ function printUsage() {
       "treasury status": "Show agent status and recent activity",
       "treasury evaluate [--verbose]": "Run single evaluation cycle (read-only)",
       "treasury trigger [--dry-run]": "Manually trigger evaluate + execute cycle",
+      "treasury judge-path": "Ultimate end-to-end trace report for submission",
       "treasury policies [--init]": "Show or initialize treasury policies",
       "treasury kill-switch [on|off]": "Manage execution kill switch",
     },

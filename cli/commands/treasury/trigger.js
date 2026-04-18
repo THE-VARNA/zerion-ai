@@ -52,8 +52,9 @@ export default async function treasuryTrigger(args, flags) {
       out += `\x1b[1m│\x1b[0m ${p(` ⚡ EXECUTION CYCLE: ${data.cycleId?.slice(0, 8).toUpperCase() || "MANUAL"}`, 56)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
       
-      const statusColor = data.status === "executed" ? "\x1b[32m" : "\x1b[33m";
-      out += `\x1b[1m│\x1b[0m ${p(` Status:   ${statusColor}${data.status.toUpperCase()}\x1b[0m`, 56)} \x1b[1m│\x1b[0m\n`;
+      const status = data.status || "UNKNOWN";
+      const statusColor = status === "executed" ? "\x1b[32m" : "\x1b[33m";
+      out += `\x1b[1m│\x1b[0m ${p(` Status:   ${statusColor}${status.toUpperCase()}\x1b[0m`, 56)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(` Mode:     ${dryRun ? "\x1b[33mDRY RUN\x1b[0m" : "\x1b[31mLIVE\x1b[0m"}`, 56)} \x1b[1m│\x1b[0m\n`;
       
       if (data.breaches > 0) {

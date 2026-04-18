@@ -30,6 +30,10 @@ node cli/zerion.js treasury kill-switch on
 echo " - Kill switch ACTIVATED. Proving execution is blocked:"
 node cli/zerion.js treasury trigger --dry-run || echo -e "\n\x1b[31m✓ Execution correctly blocked by safety override.\x1b[0m"
 
+# 5. The Ultimate Proof (Judge Path Report)
+echo -e "\n\x1b[1m5. Final Trace Report: The High-Fidelity submission proof...\x1b[0m"
+node cli/zerion.js treasury judge-path
+
 # Reset
 node cli/zerion.js treasury kill-switch off
 echo -e "\n\x1b[32m❖ Demo Sequence Complete. System is SAFE and ARMED.\x1b[0m"

@@ -4,9 +4,18 @@
    *The agent will sign the ECDSA transaction locally and broadcast it.*
 4. **View the Audit Log**:
    ```bash
-   zerion treasury status
-   ```
-   *The dashboard will display the confirmed onchain Hash.*
+
+### Dashboard & Status
+```bash
+# The High-Fidelity "story" trace for judges (Recommended)
+zerion treasury judge-path
+
+# View the real-time Guardian Dashboard
+zerion treasury status
+
+# Run a live policy evaluation card
+zerion treasury evaluate --pretty
+```
 
 ### Autonomous Mode
 

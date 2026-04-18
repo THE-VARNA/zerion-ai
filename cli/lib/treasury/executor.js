@@ -238,7 +238,9 @@ export async function runFullCycle(options = {}) {
   return {
     cycleId,
     status: "completed",
-    evaluation: evaluation.summary,
+    config,
+    portfolio: evalResult.portfolio,
+    evaluation,
     breaches: evaluation.breaches,
     results,
   };

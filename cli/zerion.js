@@ -95,12 +95,14 @@ import treasuryStart from "./commands/treasury/start.js";
 import treasuryStatus from "./commands/treasury/status.js";
 import treasuryEvaluate from "./commands/treasury/evaluate.js";
 import treasuryTrigger from "./commands/treasury/trigger.js";
+import treasuryJudgePath from "./commands/treasury/judge-path.js";
 import treasuryPolicies from "./commands/treasury/policies.js";
 import treasuryKillSwitch from "./commands/treasury/kill-switch.js";
 register("treasury", "start", treasuryStart);
 register("treasury", "status", treasuryStatus);
 register("treasury", "evaluate", treasuryEvaluate);
 register("treasury", "trigger", treasuryTrigger);
+register("treasury", "judge-path", treasuryJudgePath);
 register("treasury", "policies", treasuryPolicies);
 register("treasury", "kill-switch", treasuryKillSwitch);
 
