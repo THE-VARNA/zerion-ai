@@ -1,0 +1,401 @@
+
+> zerion@0.3.0 test
+> node --test tests/*.test.mjs
+
+▶ CLI routing
+  ▶ help output
+    ✔ shows help with no args (exit 0) (1293.425854ms)
+    ✔ shows help with --help (exit 0) (994.435316ms)
+    ✔ shows help with -h (exit 0) (1109.482409ms)
+    ✔ shows version with --version (940.997352ms)
+  ✔ help output (4341.779372ms)
+  ▶ command routing
+    ✔ chains shows chain list (no API key needed) (937.510974ms)
+    ✔ chains list still works via single-word fallback (940.587291ms)
+    ✔ wallet list shows wallets (921.963143ms)
+  ✔ command routing (2801.082564ms)
+  ▶ error routing
+    ✔ unknown command → error, exit 1 (895.394206ms)
+    ✔ wallet analyze removed → unknown_command, exit 1 (949.388558ms)
+    ✔ analyze with no address and no default wallet → no_wallet, exit 1 (895.506982ms)
+    ✔ portfolio with no address and no default wallet → no_wallet, exit 1 (941.122823ms)
+  ✔ error routing (3682.553173ms)
+  ▶ output format
+    ✔ all error outputs are valid JSON on stderr (1816.823169ms)
+    ✔ help output is valid JSON on stdout with required keys (937.455576ms)
+  ✔ output format (2754.729046ms)
+✔ CLI routing (13583.355156ms)
+▶ zerion
+  ✔ prints help (1305.227267ms)
+  ✔ fails clearly when API key is missing for API commands (1008.289922ms)
+  ✔ chains command works without API key (1084.007962ms)
+✔ zerion (3400.453981ms)
+▶ cross-integration consistency
+  ▶ CLI API paths match MCP tool paths
+    ✔ wallet-portfolio path matches (2.530108ms)
+    ✔ wallet-positions path matches (1.224966ms)
+    ✔ wallet-transactions path matches (1.284047ms)
+    ✔ wallet-pnl path matches (0.682252ms)
+    ✔ chains-list path matches (0.888892ms)
+  ✔ CLI API paths match MCP tool paths (9.361036ms)
+  ▶ all API MCP tools use Basic auth (matching CLI)
+    ✔ every API tool has auth: Basic (8.308047ms)
+  ✔ all API MCP tools use Basic auth (matching CLI) (9.924969ms)
+  ▶ all API methods are GET
+    ✔ every API tool uses GET method (4.342367ms)
+  ✔ all API methods are GET (5.524601ms)
+  ▶ CLI and Python use same auth logic
+    ✔ basicAuthHeader produces same result as Python _auth_header logic (1.192958ms)
+  ✔ CLI and Python use same auth logic (3.422812ms)
+  ▶ same default API base URL
+    ✔ Python example uses same default as CLI (1.36148ms)
+  ✔ same default API base URL (1.683969ms)
+  ▶ wallet addresses are consistent and valid
+    ✔ all addresses across README, skills README, and curl examples are 42 chars (1.970504ms)
+  ✔ wallet addresses are consistent and valid (2.233001ms)
+  ▶ every CLI wallet subcommand has a corresponding MCP tool
+    ✔ portfolio, positions, transactions, pnl all have tools (1.374451ms)
+    ✔ chains list has a tool (1.297649ms)
+  ✔ every CLI wallet subcommand has a corresponding MCP tool (3.03606ms)
+  ▶ wallet tools require address input
+    ✔ all wallet tools have required address input (0.68522ms)
+  ✔ wallet tools require address input (0.89445ms)
+  ▶ tool names match filenames
+    ✔ each file's name field matches the filename stem (1.024864ms)
+  ✔ tool names match filenames (1.346872ms)
+✔ cross-integration consistency (40.950649ms)
+▶ examples
+  ▶ cursor/mcp.json
+    ✔ exists and is valid JSON (2.191845ms)
+    ✔ uses correct MCP URL (0.689636ms)
+    ✔ uses Bearer auth (1.51904ms)
+  ✔ cursor/mcp.json (6.641822ms)
+  ▶ claude/mcp.json
+    ✔ exists and is valid JSON (2.141068ms)
+    ✔ uses same MCP URL as cursor config (0.891688ms)
+    ✔ uses Bearer auth (1.055197ms)
+  ✔ claude/mcp.json (5.441919ms)
+  ▶ openclaw/tool.json
+    ✔ exists and is valid JSON (2.69347ms)
+    ✔ has correct command (0.942852ms)
+    ✔ has analyze args structure (3.83403ms)
+    ✔ requires ZERION_API_KEY env (1.873784ms)
+  ✔ openclaw/tool.json (10.621714ms)
+  ▶ openai-agents/wallet_analysis.py
+    ✔ exists (0.7955ms)
+    ✔ has valid Python syntax (191.070789ms)
+    ✔ uses URL encoding for addresses (0.808914ms)
+  ✔ openai-agents/wallet_analysis.py (193.441263ms)
+  ▶ http/curl.md
+    ✔ exists (0.460113ms)
+    ✔ covers all 5 endpoints (0.41339ms)
+    ✔ uses --globoff for bracket params (0.299226ms)
+  ✔ http/curl.md (1.42208ms)
+  ▶ example wallet addresses
+    ✔ all hex addresses in README are 42 characters (0.430867ms)
+    ✔ all hex addresses in skills README are 42 characters (0.313259ms)
+  ✔ example wallet addresses (0.882992ms)
+✔ examples (226.528085ms)
+▶ integration tests (requires ZERION_API_KEY)
+  ▶ portfolio
+    ✖ returns portfolio for valid address (1960.951773ms)
+    ✖ works with ENS name (4588.370871ms)
+  ✖ portfolio (6551.470016ms)
+  ▶ positions
+    ✔ returns positions array (2033.093741ms)
+    ✔ filters by chain (2304.798501ms)
+    ✔ filters by --positions simple (1585.743584ms)
+    ✔ filters by --positions defi (2288.568527ms)
+  ✔ positions (8213.825419ms)
+  ▶ transactions
+    ✔ returns transactions data (1746.321913ms)
+    ✔ respects custom limit (1765.344484ms)
+    ✔ filters by chain (1966.00675ms)
+  ✔ transactions (5478.59139ms)
+  ▶ pnl
+    ✔ returns PnL data (1739.297467ms)
+  ✔ pnl (1739.799387ms)
+  ▶ chains
+    ✔ returns chains array (949.423578ms)
+  ✔ chains (949.716635ms)
+  ▶ analyze
+    ✔ returns full analysis (1898.35643ms)
+    ✔ analyze works with ENS (12874.220318ms)
+    ✔ analyze with chain filter (1948.172606ms)
+  ✔ analyze (16721.44855ms)
+  ▶ error handling
+    ✔ invalid API key returns error (1444.346273ms)
+  ✔ error handling (1444.804396ms)
+✖ integration tests (requires ZERION_API_KEY) (41104.089094ms)
+▶ skills directory
+  ✔ has all expected skill directories (3.753329ms)
+  ▶ wallet-analysis
+    ✔ has SKILL.md (1.419421ms)
+    ✔ has LICENSE.txt (1.005419ms)
+    ✔ SKILL.md has valid frontmatter with required fields (3.260403ms)
+    ✔ frontmatter name matches directory name (1.081658ms)
+    ✔ frontmatter declares zerion as openclaw dependency (0.7579ms)
+  ✔ wallet-analysis (8.773181ms)
+  ▶ wallet-trading
+    ✔ has SKILL.md (3.54718ms)
+    ✔ has LICENSE.txt (1.091093ms)
+    ✔ SKILL.md has valid frontmatter with required fields (7.579341ms)
+    ✔ frontmatter name matches directory name (1.155849ms)
+    ✔ frontmatter declares zerion as openclaw dependency (1.708595ms)
+  ✔ wallet-trading (18.892042ms)
+  ▶ chains
+    ✔ has SKILL.md (0.869365ms)
+    ✔ has LICENSE.txt (0.313825ms)
+    ✔ SKILL.md has valid frontmatter with required fields (0.554983ms)
+    ✔ frontmatter name matches directory name (0.546813ms)
+    ✔ frontmatter declares zerion as openclaw dependency (0.359819ms)
+  ✔ chains (3.422109ms)
+  ▶ zerion
+    ✔ has SKILL.md (0.471644ms)
+    ✔ has LICENSE.txt (0.198043ms)
+    ✔ SKILL.md has valid frontmatter with required fields (0.577252ms)
+    ✔ frontmatter name matches directory name (0.362913ms)
+    ✔ frontmatter declares zerion as openclaw dependency (0.258816ms)
+  ✔ zerion (2.76978ms)
+✔ skills directory (42.597162ms)
+▶ wallet-analysis extras
+  ✔ has EXAMPLES.md (0.584406ms)
+  ✔ EXAMPLES.md contains example wallet addresses (1.39244ms)
+  ✔ documents ENS names as supported input (1.259738ms)
+✔ wallet-analysis extras (3.769258ms)
+▶ skill guidance consistency
+  ✔ documents WALLET_PRIVATE_KEY for x402 in zerion skill (0.486745ms)
+  ✔ does not claim wallet commands accept more chains than the CLI validator (0.756507ms)
+✔ skill guidance consistency (1.544699ms)
+▶ tool catalog
+  ✔ has all 8 expected tool files (4.416585ms)
+  ▶ API tool schema
+    ▶ wallet-portfolio.json
+      ✔ is valid JSON with required fields (7.026676ms)
+      ✔ uses GET method (1.986369ms)
+      ✔ uses Basic auth (0.440401ms)
+      ✔ has name matching filename stem (0.378716ms)
+      ✔ has valid source URL format (1.094532ms)
+    ✔ wallet-portfolio.json (12.368662ms)
+    ▶ wallet-positions.json
+      ✔ is valid JSON with required fields (1.067865ms)
+      ✔ uses GET method (0.882689ms)
+      ✔ uses Basic auth (0.334747ms)
+      ✔ has name matching filename stem (0.763583ms)
+      ✔ has valid source URL format (0.306844ms)
+    ✔ wallet-positions.json (4.469137ms)
+    ▶ wallet-transactions.json
+      ✔ is valid JSON with required fields (0.47439ms)
+      ✔ uses GET method (0.146995ms)
+      ✔ uses Basic auth (0.161672ms)
+      ✔ has name matching filename stem (0.126861ms)
+      ✔ has valid source URL format (0.213383ms)
+    ✔ wallet-transactions.json (1.568155ms)
+    ▶ wallet-pnl.json
+      ✔ is valid JSON with required fields (0.591594ms)
+      ✔ uses GET method (0.119427ms)
+      ✔ uses Basic auth (0.090724ms)
+      ✔ has name matching filename stem (0.09482ms)
+      ✔ has valid source URL format (0.135595ms)
+    ✔ wallet-pnl.json (1.39122ms)
+    ▶ chains-list.json
+      ✔ is valid JSON with required fields (0.946837ms)
+      ✔ uses GET method (0.232144ms)
+      ✔ uses Basic auth (0.132197ms)
+      ✔ has name matching filename stem (0.665439ms)
+      ✔ has valid source URL format (0.205796ms)
+    ✔ chains-list.json (2.666555ms)
+  ✔ API tool schema (24.054029ms)
+  ▶ CLI tool schema
+    ▶ swap.json
+      ✔ is valid JSON with required fields (0.646863ms)
+      ✔ has name matching filename stem (18.504985ms)
+    ✔ swap.json (19.647002ms)
+    ▶ wallet-create.json
+      ✔ is valid JSON with required fields (1.483354ms)
+      ✔ has name matching filename stem (0.654935ms)
+    ✔ wallet-create.json (2.987654ms)
+    ▶ search.json
+      ✔ is valid JSON with required fields (0.662114ms)
+      ✔ has name matching filename stem (0.396251ms)
+    ✔ search.json (2.194825ms)
+    ▶ treasury-status.json
+      ✔ is valid JSON with required fields (0.663061ms)
+      ✔ has name matching filename stem (0.256813ms)
+    ✔ treasury-status.json (1.245253ms)
+    ▶ treasury-evaluate.json
+      ✔ is valid JSON with required fields (1.864165ms)
+      ✔ has name matching filename stem (1.08577ms)
+    ✔ treasury-evaluate.json (3.775077ms)
+    ▶ treasury-policies.json
+      ✔ is valid JSON with required fields (1.055643ms)
+      ✔ has name matching filename stem (0.542262ms)
+    ✔ treasury-policies.json (2.883651ms)
+  ✔ CLI tool schema (34.140719ms)
+  ▶ wallet API tools
+    ✔ wallet-portfolio.json has {address} in path (3.802008ms)
+    ✔ wallet-portfolio.json has required address input (0.858802ms)
+    ✔ wallet-positions.json has {address} in path (0.277955ms)
+    ✔ wallet-positions.json has required address input (1.314547ms)
+    ✔ wallet-transactions.json has {address} in path (0.649579ms)
+    ✔ wallet-transactions.json has required address input (0.319591ms)
+    ✔ wallet-pnl.json has {address} in path (0.288691ms)
+    ✔ wallet-pnl.json has required address input (0.259733ms)
+  ✔ wallet API tools (21.844079ms)
+  ▶ position filter support
+    ✔ wallet-positions has filter[positions] with enum array (12.754843ms)
+  ✔ position filter support (13.12395ms)
+  ▶ chain filter support
+    ✔ wallet-positions has optional filter[chain_ids] (1.217522ms)
+    ✔ wallet-transactions has optional filter[chain_ids] (0.633513ms)
+  ✔ chain filter support (2.372184ms)
+  ▶ chains-list tool
+    ✔ has no address in path (1.051729ms)
+    ✔ has empty input (no required params) (0.730111ms)
+    ✔ has kind: chain-capability (0.714191ms)
+  ✔ chains-list tool (3.18061ms)
+✔ tool catalog (107.270721ms)
+✔ evaluatePolicies - missing or invalid data (fail-closed) (4.089604ms)
+✔ evaluatePolicies - expiry (0.574823ms)
+✔ evaluatePolicies - concentration limit breach (5.420527ms)
+✔ evaluatePolicies - asset denylist match (0.894785ms)
+✔ evaluatePolicies - stop loss (1.154926ms)
+✔ validateExecution - safety controls (0.697274ms)
+✔ Safety - Kill Switch (5.101283ms)
+✔ Safety - Idempotency Ring Buffer (1.69199ms)
+✔ Security - Drain Attack Prevention (Negative Amounts) (2.7556ms)
+✔ Security - Poisoned Payload Attacks (NaN, Infinity, Strings) (0.521554ms)
+✔ Security - Idempotency Replay Attack (1.481308ms)
+✔ Edge Case - evaluatePolicies handles array poisoning (2.399441ms)
+✔ Security - Strict Chain Enforcement (0.770375ms)
+▶ parseFlags
+  ✔ returns empty rest and flags for empty argv (4.509258ms)
+  ✔ collects positional args into rest (0.48686ms)
+  ✔ parses --key value (space-separated) (0.461493ms)
+  ✔ parses --key=value (equals-separated) (0.519055ms)
+  ✔ parses --flag alone as boolean true (0.391269ms)
+  ✔ handles mixed positional args and flags (0.618642ms)
+  ✔ handles --flag1 --flag2 value (flag1 is boolean, flag2 has value) (0.447964ms)
+  ✔ handles --key= as empty string value (0.596921ms)
+  ✔ preserves full value with --key=a=b (splits on first = only) (0.577872ms)
+  ✔ last duplicate flag wins (0.73697ms)
+  ✔ treats -h (single dash) as positional arg, not flag (0.421106ms)
+✔ parseFlags (14.322644ms)
+▶ basicAuthHeader
+  ✔ produces correct Base64 for a normal key (0.578625ms)
+  ✔ produces correct header for empty string (0.604133ms)
+  ✔ handles special characters in key (0.418827ms)
+✔ basicAuthHeader (2.154935ms)
+▶ validateChain
+  ✔ returns null for each valid chain (0.538238ms)
+  ✔ returns error for invalid chain (0.592455ms)
+  ✔ is case-sensitive (0.227606ms)
+  ✔ returns null for falsy values (undefined, null, empty string) (0.229629ms)
+  ✔ returns specific error for boolean true (from --chain with no value) (0.160748ms)
+✔ validateChain (2.107095ms)
+▶ POSITION_FILTERS
+  ✔ has 3 keys mapping correctly (0.132832ms)
+✔ POSITION_FILTERS (0.224137ms)
+▶ validatePositions
+  ✔ returns null for each valid value (0.441999ms)
+  ✔ returns error for invalid value (0.229408ms)
+  ✔ returns specific error for boolean true (bare --positions) (0.323467ms)
+  ✔ returns null for falsy values (0.297689ms)
+✔ validatePositions (1.753527ms)
+▶ resolvePositionFilter
+  ✔ maps each value correctly (0.27855ms)
+  ✔ defaults to no_filter for undefined (0.154754ms)
+✔ resolvePositionFilter (0.632804ms)
+▶ summarizeAnalyze
+  ✔ returns all fields for full valid data (1.484262ms)
+  ✔ handles all null/undefined responses gracefully (0.253711ms)
+  ✔ handles non-array positions.data (0.202304ms)
+  ✔ handles missing nested attributes (0.313458ms)
+  ✔ passes address through to query (0.34309ms)
+✔ summarizeAnalyze (3.07216ms)
+▶ CHAIN_IDS
+  ✔ contains 14 chains (0.288252ms)
+  ✔ includes key chains (0.235536ms)
+✔ CHAIN_IDS (0.709498ms)
+▶ config
+  ✔ loadConfig returns defaults when no file exists (25.92515ms)
+  ✔ setConfigValue and getConfigValue round-trip (23.099805ms)
+  ✔ setConfigValue preserves other values (9.595548ms)
+✔ config (64.220893ms)
+▶ parseFlags (wallet-cli)
+  ✔ parses --key value (space-separated) (8.9577ms)
+  ✔ parses --key=value (0.731185ms)
+  ✔ parses boolean flag (0.462603ms)
+  ✔ parses --no-flag as false (0.633324ms)
+  ✔ separates positional args from flags (1.098756ms)
+  ✔ handles -- separator (0.954326ms)
+  ✔ handles empty argv (0.521847ms)
+  ✔ handles mixed positional and flags (3.503808ms)
+✔ parseFlags (wallet-cli) (21.345713ms)
+▶ router command parsing
+  ✔ parses two-word command: wallet create (16.053409ms)
+  ✔ parses single-word command: config list (0.655011ms)
+  ✔ parses --help flag (0.49543ms)
+  ✔ parses --version flag (0.289742ms)
+✔ router command parsing (20.519424ms)
+warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+warning: '--chain evm' is deprecated; use '--chain ethereum' or a specific chain name (base, arbitrum, polygon, ...)
+▶ ows wrapper
+  ✔ createWallet returns wallet with EVM address (437.120104ms)
+  ✔ listWallets includes created wallet (337.025136ms)
+  ✔ getEvmAddress returns correct address (335.964322ms)
+  ✔ getEvmAddress throws for unknown wallet (1.506231ms)
+  ✔ importFromKey imports with correct address (326.908723ms)
+  ✔ signEvmTransaction returns signature with recoveryId (712.499554ms)
+  ✔ deleteWallet removes wallet (338.311936ms)
+✔ ows wrapper (2492.083012ms)
+ℹ tests 209
+ℹ suites 68
+ℹ pass 207
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 41328.476297
+
+✖ failing tests:
+
+test at tests/integration.test.mjs:41:5
+✖ returns portfolio for valid address (1960.951773ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///home/varna/solana-projects/policy-bounded%20autonomous%20treasury%20rebalancer/tests/integration.test.mjs:43:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1516:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1516:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/integration.test.mjs:50:5
+✖ works with ENS name (4588.370871ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///home/varna/solana-projects/policy-bounded%20autonomous%20treasury%20rebalancer/tests/integration.test.mjs:52:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
