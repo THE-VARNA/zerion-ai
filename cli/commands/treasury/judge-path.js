@@ -23,6 +23,14 @@ export default async function treasuryJudgePath(args, flags) {
       
       let out = "";
 
+      if (res.blocked) {
+        out += `\n\x1b[41m\x1b[37m\x1b[1m ⚠ SYSTEM ARRESTED: SAFETY OVERRIDE ACTIVE \x1b[0m\n`;
+        out += `\x1b[33mTrace aborted. Deactivate kill-switch to run full evaluation.\x1b[0m\n`;
+      } else if (res.error) {
+        out += `\n\x1b[41m\x1b[37m\x1b[1m ✖ TRACE ABORTED: SYSTEM ERROR \x1b[0m\n`;
+        out += `\x1b[31mPhase: ${res.phase?.toUpperCase()} | Message: ${res.message}\x1b[0m\n`;
+      }
+
       // 1. HEADER
       out += `\n\x1b[1m┌────────────────────────────────────────────────────────────────────────┐\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(` 🏆 THE JUDGE'S TRACE : ${res.cycleId?.toUpperCase()}`, 70)} \x1b[1m│\x1b[0m\n`;
