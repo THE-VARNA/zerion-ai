@@ -6,11 +6,11 @@ An institutional-grade autonomous agent built for the Zerion Frontier Hackathon.
 Unlike typical chatbots, the Guardian separates **Intent** from **Execution**:
 1. **The AI Layer**: Suggests and writes treasury policies based on risk tolerance (via MCP / OpenClaw).
 2. **The Policy Engine**: A deterministic, code-enforced layer that prevents any transaction that violates the JSON guardrails.
-3. **The Secure Keystore**: Transactions are signed using a local, encrypted keystore (OWS) which requires an explicit unlock secret.
+3. **The Secure Keystore**: Transactions are signed using a local, encrypted keystore which requires an explicit unlock secret.
 
 ## 🏆 The Judge's Path (Proof of Correctness)
 For judges and auditors, the Guardian provides the `judge-path` command. This produces an unambiguous, verifiable trace of the system's logic state machine:
-- ✅ **SAFE → NO ACTION**: Treasury is compliant with all operational bounds.
+- ✅ **CLEAN → NO ACTION**: Treasury is compliant with all operational bounds.
 - ⚡ **BREACH → EXECUTED**: A policy was violated, and a remedial transaction was broadcast.
 - 🟥 **BREACH → BLOCKED**: A policy was violated, but execution was arrested by the manual kill-switch or safety-lock.
 

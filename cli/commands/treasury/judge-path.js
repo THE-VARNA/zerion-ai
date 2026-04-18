@@ -19,15 +19,7 @@ export default async function treasuryJudgePath(args, flags) {
     });
 
     print(data, (res) => {
-      const p = (str, width) => {
-        // Strip ANSI codes
-        const clean = str.replace(/\x1b\[[0-9;]*m/g, '');
-        // Account for 🏛️ taking up 2 cells but being counted differently in some environments
-        // If clean string contains 🏛️, we adjust width
-        let visibleWidth = clean.length;
-        if (clean.includes("🏛️")) visibleWidth += 1; // Landmark is 2 cells
-        return str + " ".repeat(Math.max(0, width - visibleWidth));
-      };
+      const p = (str, w) => str + " ".repeat(Math.max(0, w - str.replace(/\x1b\[[0-9;]*m/g, '').length));
       
       const config = res.config || {};
       const policies = config.policies || [];
@@ -49,10 +41,11 @@ export default async function treasuryJudgePath(args, flags) {
 
       // 1. HEADER
       out += `\n\x1b[1m┌────────────────────────────────────────────────────────────────────────┐\x1b[0m\n`;
-      out += `\x1b[1m│\x1b[0m ${p(` 🏛️  TREASURY JUDGE TRACE : ${res.cycleId?.split("-")[0].toUpperCase()}`, 70)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` ❖  TREASURY JUDGE TRACE : ${res.cycleId?.split("-")[0].toUpperCase()}`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m├────────────────────────────────────────────────────────────────────────┤\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(`     FINAL STATE:  ${stateColor}${finalState}\x1b[0m`, 70)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m├────────────────────────────────────────────────────────────────────────┤\x1b[0m\n`;
+
 
       // 2. POLICY INPUTS
       out += `\x1b[1m│\x1b[0m ${p(` [1] POLICY OPERATIONAL BOUNDS`, 70)} \x1b[1m│\x1b[0m\n`;
