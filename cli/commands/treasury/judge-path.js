@@ -19,7 +19,15 @@ export default async function treasuryJudgePath(args, flags) {
     });
 
     print(data, (res) => {
-      const p = (str, width) => str + " ".repeat(Math.max(0, width - str.replace(/\x1b\[\d+m/g, '').length));
+      const p = (str, width) => {
+        // Strip ANSI codes
+        const clean = str.replace(/\x1b\[[0-9;]*m/g, '');
+        // Account for 🏛️ taking up 2 cells but being counted differently in some environments
+        // If clean string contains 🏛️, we adjust width
+        let visibleWidth = clean.length;
+        if (clean.includes("🏛️")) visibleWidth += 1; // Landmark is 2 cells
+        return str + " ".repeat(Math.max(0, width - visibleWidth));
+      };
       
       const config = res.config || {};
       const policies = config.policies || [];

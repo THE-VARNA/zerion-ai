@@ -44,7 +44,8 @@ if [ -f ~/.zerion/keystore.json ] && [ ! -z "$TREASURY_WALLET_PASSPHRASE" ]; the
 fi
 
 echo -e "\n\x1b[1m┌────────────────────────────────────────────────────────────────────────┐\x1b[0m"
-echo -e "\x1b[1m│\x1b[0m  ❖ FINAL JUDGE TRUTH STATEMENT                                         \x1b[1m│\x1b[0m"
+# Manually pad header to 70 (❖ occupies 2 cells in most modern terminals)
+printf "\x1b[1m│\x1b[0m  ❖ FINAL JUDGE TRUTH STATEMENT %-39s \x1b[1m│\x1b[0m\n" ""
 echo -e "\x1b[1m├────────────────────────────────────────────────────────────────────────┤\x1b[0m"
 printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "REAL ONCHAIN ACTION:  $REAL_ACTION"
 printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "POLICY ENFORCED:      yes (Deterministic Engine)"
