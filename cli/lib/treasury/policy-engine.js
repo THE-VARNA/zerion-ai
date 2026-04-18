@@ -262,6 +262,11 @@ export function validateExecution({ chain, amountUsd, allowedChains, spendCapUsd
     reasons.push(`Chain "${chain}" not in allowed chains: ${allowedChains.join(", ")}`);
   }
 
+  // Amount bounds (Prevent drain attacks)
+  if (typeof amountUsd !== "number" || isNaN(amountUsd) || amountUsd <= 0) {
+    reasons.push(`Invalid execution amount: ${amountUsd}`);
+  }
+
   // Spend cap
   if (spendCapUsd && amountUsd > spendCapUsd) {
     reasons.push(`Amount $${amountUsd} exceeds spend cap $${spendCapUsd}`);
