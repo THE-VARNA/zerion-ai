@@ -86,7 +86,8 @@ npm install
 | Feature | Institutional Benefit |
 | :--- | :--- |
 | **Chain-Aware Identity** | Uses Zerion chain-aware asset identifiers (CAIP-2) to avoid cross-chain identity collisions across **60+ EVM chains & Solana**. |
-| **User-Defined Thresholds** | Granular price, stop-loss, or concentration policies trigger a rebalance cycle only when the portfolio drifts beyond exact bounds. |
+| **Automated Stop-Loss Mitigation** | Actively protects treasury downside by automatically liquidating crashing assets into stablecoins (`USDC`) when they breach a hard price floor. |
+| **Concentration Limits** | Triggers auto-rebalancing when a single asset balloons past its predefined maximum portfolio allocation (e.g., automatically trimming 40% ETH exposure down to 30%). |
 | **Fail-Closed Engine** | Inherently pessimistic. Defaults entirely to a `BLOCK` state if API data is malformed, missing, or if policy ambiguity is detected. |
 | **Manual Kill-Switch** | A single-command physical arrest mechanism that can halt the autonomous daemon instantly returning safety to the operator. |
 | **Append-Only Audit Log** | Maintains a persistent, machine-readable JSONL audit log for strict post-event reporting. |
