@@ -8,6 +8,12 @@
 import { register, registerSingle, dispatch } from "./router.js";
 import { printError, setPrettyMode } from "./lib/util/output.js";
 import { migrateFromZerionCli } from "./lib/util/migrate.js";
+import { existsSync } from "node:fs";
+
+// Load .env automatically if it exists (Node 20.12.0+ / 21.7.0+)
+if (existsSync(".env") && typeof process.loadEnvFile === "function") {
+  process.loadEnvFile(".env");
+}
 
 // Migrate config from ~/.zerion-cli → ~/.zerion on first run after upgrade
 migrateFromZerionCli();

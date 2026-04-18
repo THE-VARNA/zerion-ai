@@ -49,25 +49,54 @@ export default async function treasuryStatus(args, flags) {
   };
 
   print(status, (data) => {
-    const K = data.agent.killSwitch === "ACTIVE" 
-      ? "\x1b[31mACTIVE (Arrested)\x1b[0m" : "\x1b[32minactive (Running properly)\x1b[0m";
+    const isKill = data.agent.killSwitch === "ACTIVE";
+    const killColor = isKill ? "\x1b[41m\x1b[37m" : "\x1b[42m\x1b[30m";
+    const killStatus = isKill ? " ARRESTED " : " RUNNING  ";
     
-    let out = `\n\x1b[1m=== TREASURY GUARDIAN STATUS ===\x1b[0m\n\n`;
-    out += `Kill Switch: ${K}\n`;
-    out += `Audit Log:   ${data.agent.auditLogPath}\n\n`;
-    out += `\x1b[1mRecent Activity (Last ${data.recentActivity.lastNEntries} cycles)\x1b[0m\n`;
-    out += `Triggers:    ${data.recentActivity.triggers}\n`;
-    out += `Breaches:    \x1b[${data.recentActivity.breaches > 0 ? "31" : "32"}m${data.recentActivity.breaches}\x1b[0m\n`;
-    out += `Executions:  \x1b[36m${data.recentActivity.executions}\x1b[0m\n`;
-    out += `Failures:    ${data.recentActivity.failures > 0 ? `\x1b[31m${data.recentActivity.failures}\x1b[0m` : "0"}\n\n`;
-    out += `\x1b[1mLast 5 Events:\x1b[0m\n`;
+    const p = (str, w) => str + " ".repeat(Math.max(0, w - str.replace(/\x1b\[\d+m/g, '').length));
+
+    let out = `\n\x1b[1m┌────────────────────────────────────────────────────────────────────────┐\x1b[0m\n`;
+    out += `\x1b[1m│\x1b[0m ${p(` ❖ TREASURY GUARDIAN DASHBOARD            ${killColor}\x1b[1m ${killStatus} \x1b[0m`, 70)} \x1b[1m│\x1b[0m\n`;
+    out += `\x1b[1m├──────────────────────────────────────┬─────────────────────────────────┤\x1b[0m\n`;
+    
+    const ksText = ` Kill Switch: ${data.agent.killSwitch}`;
+    const alText = ` Log: ~${data.agent.auditLogPath.slice(-25)}`;
+    const brColor = data.recentActivity.breaches > 0 ? "\x1b[31m" : "\x1b[32m";
+    const brText = ` BREACHES: ${brColor}${data.recentActivity.breaches}\x1b[0m`;
+    
+    const trigText = ` Triggers:    ${data.recentActivity.triggers}`;
+    const execText = ` Executions:  \x1b[36m${data.recentActivity.executions}\x1b[0m`;
+    const failColor = data.recentActivity.failures > 0 ? "\x1b[31m" : "";
+    const failText = ` Failures:    ${failColor}${data.recentActivity.failures}\x1b[0m`;
+
+    out += `\x1b[1m│\x1b[0m ${p(ksText, 36)} \x1b[1m│\x1b[0m ${p(trigText, 31)} \x1b[1m│\x1b[0m\n`;
+    out += `\x1b[1m│\x1b[0m ${p(alText, 36)} \x1b[1m│\x1b[0m ${p(execText, 31)} \x1b[1m│\x1b[0m\n`;
+    out += `\x1b[1m│\x1b[0m ${p(brText, 36)} \x1b[1m│\x1b[0m ${p(failText, 31)} \x1b[1m│\x1b[0m\n`;
+    
+    out += `\x1b[1m├──────────────────────────────────────┴─────────────────────────────────┤\x1b[0m\n`;
+    out += `\x1b[1m│\x1b[0m ${p(` RECENT ACTIVITY LOG (Last 5 Events)`, 70)} \x1b[1m│\x1b[0m\n`;
+    out += `\x1b[1m├────────────────────────────────────────────────────────────────────────┤\x1b[0m\n`;
+
     for (const e of data.recentEvents) {
-      out += ` [${new Date(e.time).toLocaleTimeString()}] ${e.event.padEnd(20)} `;
-      if (e.event === "breach_detected") out += `\x1b[31m${e.data.reason}\x1b[0m\n`;
-      else if (e.event === "tx_confirmed") out += `\x1b[32mConfirmed: ${e.data.hash}\x1b[0m\n`;
-      else if (e.event === "policy_evaluated" && e.data.breaches === 0) out += `\x1b[32mClean\x1b[0m\n`;
-      else out += `${JSON.stringify(e.data)}\n`;
+      const ts = new Date(e.time).toLocaleTimeString();
+      let icon = "●";
+      let eventColor = "\x1b[37m";
+      if (e.event === "breach_detected") { icon = "✖"; eventColor = "\x1b[31m"; }
+      else if (e.event === "tx_confirmed") { icon = "✓"; eventColor = "\x1b[32m"; }
+      else if (e.event === "tx_failed") { icon = "✖"; eventColor = "\x1b[31m"; }
+      else if (e.event === "policy_evaluated") { icon = "❖"; eventColor = "\x1b[36m"; }
+      else if (e.event === "retry") { icon = "↻"; eventColor = "\x1b[33m"; }
+
+      const rawEventName = e.event.replace(/_/g, " ").toUpperCase();
+      const eventName = `${eventColor}${rawEventName}\x1b[0m`;
+      out += `\x1b[1m│\x1b[0m ${p(` ${icon} [${ts}] ${eventName}`, 70)} \x1b[1m│\x1b[0m\n`;
+      
+      const details = JSON.stringify(e.data);
+      const detailStr = details.length > 58 ? details.slice(0, 55) + "..." : details;
+      out += `\x1b[1m│\x1b[0m ${p(`      ↳ ${detailStr}`, 70)} \x1b[1m│\x1b[0m\n`;
     }
+    
+    out += `\x1b[1m└────────────────────────────────────────────────────────────────────────┘\x1b[0m\n`;
     return out;
   });
 }
