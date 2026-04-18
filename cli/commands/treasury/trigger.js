@@ -17,6 +17,16 @@ export default async function treasuryTrigger(args, flags) {
     print({
       status: "blocked",
       reason: "Kill switch is active. Deactivate with: zerion treasury kill-switch off",
+    }, (data) => {
+      const p = (str, width) => str + " ".repeat(Math.max(0, width - str.replace(/\x1b\[\d+m/g, '').length));
+      let out = `\n\x1b[1m┌──────────────────────────────────────────────────────────┐\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(" \x1b[41m\x1b[37m ❖ EXECUTION BLOCKED \x1b[0m", 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` Status:   \x1b[31mARRESTED\x1b[0m`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` Reason:   Safety Kill-Switch is active.`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` Action:   zerion treasury kill-switch off`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m└──────────────────────────────────────────────────────────┘\x1b[0m\n`;
+      return out;
     });
     return;
   }

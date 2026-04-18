@@ -27,6 +27,15 @@ export default async function treasuryPolicies(args, flags) {
       created: path,
       message: "Sample treasury policy created. Edit the file to configure your wallet and policies.",
       nextStep: "zerion treasury evaluate",
+    }, (data) => {
+      const p = (str, width) => str + " ".repeat(Math.max(0, width - str.replace(/\x1b\[\d+m/g, '').length));
+      let out = `\n\x1b[1m┌──────────────────────────────────────────────────────────┐\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(" \x1b[42m\x1b[37m ❖ CONFIGURATION INITIALIZED \x1b[0m", 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` Path:    ${data.created}`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` Next:    ${data.nextStep}`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m└──────────────────────────────────────────────────────────┘\x1b[0m\n`;
+      return out;
     });
     return;
   }
@@ -54,7 +63,30 @@ export default async function treasuryPolicies(args, flags) {
         webhookCallbackUrl: config.webhookCallbackUrl || "not configured",
       },
     };
-    print(output);
+    print(output, (data) => {
+      const p = (str, width) => str + " ".repeat(Math.max(0, width - str.replace(/\x1b\[\d+m/g, '').length));
+      let out = `\n\x1b[1m┌──────────────────────────────────────────────────────────┐\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(" ❖ ACTIVE TREASURY POLICIES", 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` Sources:  ${data.policyFile}`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` Wallet:   ${data.walletSet.evmAddress.slice(0, 10)}...`, 56)} \x1b[1m│\x1b[0m\n`;
+      
+      out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` ACTIVE RULES: ${data.policies.length}`, 56)} \x1b[1m│\x1b[0m\n`;
+      for (const pol of data.policies) {
+        const row = ` - [${pol.type.toUpperCase()}] on ${pol.asset.toUpperCase()}`;
+        out += `\x1b[1m│\x1b[0m ${p(row, 56)} \x1b[1m│\x1b[0m\n`;
+      }
+      
+      out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` GLOBAL CONSTRAINTS:`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` - Spend Cap:  $${data.constraints.spendCapUsd}`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` - Slippage:   $${data.constraints.slippagePercent}%`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` - Poll Int:   ${data.monitoring.pollIntervalMs}ms`, 56)} \x1b[1m│\x1b[0m\n`;
+      
+      out += `\x1b[1m└──────────────────────────────────────────────────────────┘\x1b[0m\n`;
+      return out;
+    });
   } catch (err) {
     printError(err.code || "config_error", err.message, {
       suggestion: "Create a policy: zerion treasury policies --init",
