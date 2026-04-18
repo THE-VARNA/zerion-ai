@@ -11,13 +11,15 @@ import { loadTreasuryConfig, getPolicyPath, getSamplePolicyJson } from "../../li
 import { print, printError } from "../../lib/util/output.js";
 import { CONFIG_DIR } from "../../lib/util/constants.js";
 
+const DEFAULT_POLICY_PATH = `${CONFIG_DIR}/treasury-policy.json`;
+
 export default async function treasuryPolicies(args, flags) {
   // --init: generate sample policy file
   if (flags.init) {
-    const path = getPolicyPath();
+    const path = getPolicyPath().replace(".json", "-template.json");
     if (existsSync(path)) {
-      printError("config_exists", `Policy file already exists at ${path}`, {
-        suggestion: "Delete it first or edit it manually.",
+      printError("config_exists", `Policy template already exists at ${path}`, {
+        suggestion: "Delete it first or activate it with: mv ... policy.json",
       });
       process.exit(1);
     }
@@ -25,15 +27,17 @@ export default async function treasuryPolicies(args, flags) {
     writeFileSync(path, getSamplePolicyJson() + "\n", { mode: 0o600 });
     print({
       created: path,
-      message: "Sample treasury policy created. Edit the file to configure your wallet and policies.",
+      message: "Sample 'demo-default' policy created. You MUST activate it before use.",
+      activationCommand: `mv ${path} ${path.replace('template.json', 'policy.json')}`,
       nextStep: "zerion treasury evaluate",
     }, (data) => {
       const p = (str, width) => str + " ".repeat(Math.max(0, width - str.replace(/\x1b\[\d+m/g, '').length));
       let out = `\n\x1b[1m┌──────────────────────────────────────────────────────────┐\x1b[0m\n`;
-      out += `\x1b[1m│\x1b[0m ${p(" \x1b[42m\x1b[37m ❖ CONFIGURATION INITIALIZED \x1b[0m", 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(" \x1b[42m\x1b[37m ❖ CONFIGURATION TEMPLATE CREATED \x1b[0m", 56)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m├──────────────────────────────────────────────────────────┤\x1b[0m\n`;
       out += `\x1b[1m│\x1b[0m ${p(` Path:    ${data.created}`, 56)} \x1b[1m│\x1b[0m\n`;
-      out += `\x1b[1m│\x1b[0m ${p(` Next:    ${data.nextStep}`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(` Action:  Activate with:`, 56)} \x1b[1m│\x1b[0m\n`;
+      out += `\x1b[1m│\x1b[0m ${p(`          ${data.activationCommand}`, 56)} \x1b[1m│\x1b[0m\n`;
       out += `\x1b[1m└──────────────────────────────────────────────────────────┘\x1b[0m\n`;
       return out;
     });

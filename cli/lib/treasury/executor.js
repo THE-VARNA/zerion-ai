@@ -68,7 +68,12 @@ export async function runEvaluation(options = {}) {
   ]);
 
   const totalValue = portfolioRes?.data?.attributes?.total?.positions || 0;
-  const positions = positionsRes?.data || [];
+  let positions = positionsRes?.data || [];
+
+  // Sort and filter for top 5 (for summary/judge display)
+  const top5Positions = [...positions]
+    .sort((a, b) => (b.attributes?.value || 0) - (a.attributes?.value || 0))
+    .slice(0, 5);
 
   // Evaluate policies
   const evaluation = evaluatePolicies({
@@ -95,7 +100,14 @@ export async function runEvaluation(options = {}) {
     logAuditEvent("breach_none", { message: "All policies passed" }, ctx);
   }
 
-  return { config, portfolio: portfolioRes, positions: positionsRes, evaluation, cycleId };
+  return { 
+    config, 
+    portfolio: portfolioRes, 
+    positions: positionsRes, 
+    topHoldings: top5Positions,
+    evaluation, 
+    cycleId 
+  };
 }
 
 /**
