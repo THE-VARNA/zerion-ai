@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Treasury Guardian - Quick Demo Script
-# This walks through the core features of the Policy-Bounded Autonomous Agent.
+# This walks through the core features of the Policy-Bounded Guardian.
 
 set -e # Exit on error
 
@@ -34,7 +34,7 @@ node cli/zerion.js treasury kill-switch off
 
 # 4. Deterministic Trace (The Judge's Trace)
 echo -e "\n\x1b[1m4. Generating the Deterministic Judge Trace...\x1b[0m"
-echo -e "\x1b[2m(Evaluating Concentration Limits & Stop-Loss triggers)\x1b[0m"
+echo -e "\x1b[2m(Evaluating User-Defined Thresholds & Rebalancing Rules)\x1b[0m"
 echo -e "\x1b[2m(Filtering for Top 5 positions by value for UI clarity)\x1b[0m"
 node cli/zerion.js treasury judge-path
 
@@ -45,13 +45,13 @@ if [ -f ~/.zerion/keystore.json ] && [ ! -z "$TREASURY_WALLET_PASSPHRASE" ]; the
 fi
 
 echo -e "\n\x1b[1m┌────────────────────────────────────────────────────────────────────────┐\x1b[0m"
-# Standardized padding to 71 cells (1│ + 1space + 71padded + 1│ = 74 cells)
+# Standardized padding to 71 cells
 printf "\x1b[1m│\x1b[0m %-71s \x1b[1m│\x1b[0m\n" "  ❖ FINAL JUDGE TRUTH STATEMENT"
 echo -e "\x1b[1m├────────────────────────────────────────────────────────────────────────┤\x1b[0m"
 printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "REAL ONCHAIN ACTION:  $REAL_ACTION"
-printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "POLICY ENFORCED:      yes (Deterministic Engine)"
-printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "KILL SWITCH TESTED:   yes (Verified)"
-printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "AUDIT LOG WRITTEN:    yes (~/.zerion/treasury-audit.jsonl)"
+printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "POLICY ENFORCED:      yes (Deterministic CLI Engine)"
+printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "CHAIN SUPPORT:        60+ EVM Chains & Solana (Official)"
+printf "\x1b[1m│\x1b[0m  %-70s \x1b[1m│\x1b[0m\n" "AUDIT LOG WRITTEN:    yes (Persistent JSONL)"
 echo -e "\x1b[1m└────────────────────────────────────────────────────────────────────────┘\x1b[0m"
 
-echo -e "\n\x1b[32m❖ Demo Sequence Complete. System is SAFE, ARMED, and AUDITABLE.\x1b[0m"
+echo -e "\n\x1b[32m❖ Demo Sequence Complete. System is DETERMINISTIC, ARMED, and AUDITABLE.\x1b[0m"

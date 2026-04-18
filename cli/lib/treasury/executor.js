@@ -154,8 +154,9 @@ export async function runFullCycle(options = {}) {
       cycleId,
       status: "clean",
       config,
+      portfolio: evalResult.portfolio,
+      evaluation,
       message: "All policies passed — no action needed",
-      evaluation: evaluation.summary,
     };
   }
 
@@ -250,7 +251,7 @@ export async function runFullCycle(options = {}) {
 
   return {
     cycleId,
-    status: "completed",
+    status: evaluation.passed ? "clean" : "executed",
     config,
     portfolio: evalResult.portfolio,
     evaluation,

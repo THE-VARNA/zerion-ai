@@ -2,16 +2,16 @@
 
 ### *Institutional-Grade Autonomous Asset Management for the Zerion Frontier*
 
-An autonomous agent engineered for **Bounded Autonomy**—leveraging AI for intent and policy writing while enforcing execution through a deterministic, fail-closed safety engine. Built exclusively for the **Zerion Frontier Hackathon**.
+An autonomous agent engineered for **Bounded Autonomy**—leveraging AI for policy drafting while enforcing every action through a deterministic, fail-closed safety engine. Built exclusively for the **Zerion Frontier Hackathon**.
 
 ---
 
 ## 🏛️ The Architecture: Bounded Autonomy
 
-Unlike "black-box" agents that handle keys directly, the Guardian separates **Logical Intent** from **Operational Execution**:
+Unlike "black-box" agents that handle keys directly, the Guardian separates **Strategic Drafting** from **Operational Execution**:
 
-1.  **The AI Layer**: Suggests institutional-grade treasury policies based on risk profiles (via Zerion MCP / OpenClaw).
-2.  **The Deterministic Engine**: Translates human policies into binary guardrails. If a trade is not explicitly allowed, it is cryptographically impossible for the agent to execute it.
+1.  **AI-Assisted Policy Drafting**: The agent can assist with proposing institutional-grade treasury policies based on risk profiles (via Zerion MCP / OpenClaw). These policies must be operator-reviewed before activation.
+2.  **The Deterministic Engine**: Translates active policies into binary guardrails. If a trade is not explicitly allowed by the operator-bounded rules, the engine defaults to a fail-closed "BLOCK" state.
 3.  **Secure Local Keystore**: Signs transactions using an encrypted local vault. This ensures the agent never handles raw private keys and operates with a zero-trust footprint.
 
 ---
@@ -21,8 +21,8 @@ Unlike "black-box" agents that handle keys directly, the Guardian separates **Lo
 The Guardian provides an authoritative **Judge Trace**, a single-screen proof of the system's internal state machine. This eliminates "demo theater" by providing an unambiguous verdict:
 
 - ✅ **CLEAN → NO ACTION REQUIRED**: Treasury is compliant. No remediation needed.
-- ⚡ **BREACH → EXECUTED**: A policy was violated; a remedial transaction was broadcast.
-- 🟥 **BREACH → BLOCKED**: A policy was violated, but execution was arrested by the manual kill-switch.
+- ⚡ **BREACH → EXECUTED**: A user-defined policy was exceeded; a remedial transaction was broadcast.
+- 🟥 **BREACH → BLOCKED**: A policy was exceeded, but execution was arrested by the manual kill-switch or safety guardrail.
 
 ---
 
@@ -45,12 +45,12 @@ npm link  # Global command registration
 
 ## 🛡️ Key Highlights & Guardrails
 
-- **Chain-Aware Identity**: Fully integrates with Zerion's unique `fungible_id` system to uniquely identify assets across multiple L1s and L2s (Ethereum, Base, Arbitrum, etc.).
-- **Deterministic Stop-Loss**: Automatic liquidation triggers instantly if asset prices fall below configured USD thresholds.
+- **Chain-Aware Identity**: Fully integrates with Zerion's unique `fungible_id` system to uniquely identify assets across **60+ EVM chains and Solana**.
+- **User-Defined Threshold Monitoring**: Price or concentration policies trigger a rebalance cycle when the portfolio drifts beyond a threshold.
 - **Focus-Mode Reporting**: The Judge Trace automatically filters for the **Top 5 positions by value**, ensuring high-signal decision making.
-- **Fail-Closed Design**: Defaults to "BLOCK" if API data is malformed or policy ambiguity is detected.
+- **Fail-Closed Engine**: Defaults to "BLOCK" if API data is malformed or policy ambiguity is detected.
 - **Manual Kill-Switch**: A single-command arrest mechanism that can stop the autonomous daemon instantly.
-- **Append-Only Audit Log**: Every evaluation cycle and execution is recorded in a tamper-resistant JSONL format for post-event forensics.
+- **Append-Only Audit Log**: Every evaluation cycle and execution is recorded in a persistent JSONL format for post-event forensics.
 
 ---
 
