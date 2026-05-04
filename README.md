@@ -1,114 +1,148 @@
-# 🏛️ Policy-Bounded Autonomous Treasury Guardian (Zerion)
+# 🏛️ Policy-Bounded Autonomous Treasury Guardian
 
-> **Institutional-Grade Autonomous Asset Management for the Zerion Frontier**
+> **Institutional-Grade Autonomous Asset Management — Zerion Frontier Hackathon**
 
-An autonomous treasury guardian for the Zerion Frontier that drafts policy with AI assistance, but enforces every action through a **deterministic, fail-closed execution engine**. It monitors wallet-set data, reacts to webhooks, and executes real onchain rebalancing *only* when operator-approved guardrails allow it.
+An autonomous treasury guardian built as an institutional-grade extension of the [`zeriontech/zerion-ai`](https://github.com/zeriontech/zerion-ai) repository. It drafts policy with AI assistance, but enforces every action through a **deterministic, fail-closed execution engine**. It monitors wallet-set data, reacts to webhooks, and executes real onchain rebalancing *only* when operator-approved guardrails allow it.
 
 > [!IMPORTANT]
-> **Hackathon Track Alignment:** This system is autonomous but explicitly bounded by operator-approved policy. It fulfills the core requirement of executing real on-chain transactions while prioritizing safety via a zero-trust footprint, rather than operating as an unbounded "god mode" bot.
+> **Hackathon Track Alignment:** This system is autonomous but explicitly bounded by operator-approved policy. It fulfills the core requirement of executing real on-chain transactions while prioritizing safety via a zero-trust footprint — not a "god mode" bot.
 
 ---
 
 ## 🏛️ The Architecture: Bounded Autonomy
 
-Unlike "black-box" agents that handle keys directly, the Guardian separates **Strategic Drafting** from **Operational Execution**:
+The core innovation is separating **Strategic Drafting** from **Deterministic Execution**, rather than building a black-box agent that controls keys directly.
 
-1. **🤖 AI-Assisted Policy Drafting**: The AI agent analyzes treasury health and suggests rebalancing guardrails, but *only* operator-approved policies become active.
-2. **⚙️ The Deterministic Engine**: The CLI translates active policies into binary, unbending guardrails. If a trade drift is not explicitly allowed, the engine defaults to a fail-closed `BLOCK` state.
-3. **🔐 Secure Local Keystore**: Transactions are signed locally through the project’s encrypted keystore flow. This ensures the agent never handles raw private keys.
+| Layer | Role |
+| :--- | :--- |
+| **🤖 Strategic Layer** | AI (via Zerion MCP) analyzes wallet data and *proposes* rebalancing policies |
+| **⚙️ Enforcement Layer** | Pure, idempotent Node.js engine. Deny-by-default: only allows trades explicitly defined in `treasury-policy.json` |
+| **🔐 Signing Layer** | Transactions signed locally via encrypted keystore. Raw private keys never enter the evaluation loop |
 
 ### The Execution Flow
+
 ```mermaid
 graph TD
-    A[Webhook Trigger] -->|Zerion API| B(Data Aggregation)
-    B --> C{Policy Engine Evaluation}
-    C -->|Compliant| D(CLEAN: No Action)
-    C -->|Breach Detected| E{Kill-Switch Active?}
+    A[⏰ Polling / Webhook Trigger] -->|Zerion API| B(Data Aggregation\n wallet-sets/portfolio + positions)
+    B --> C{Policy Engine\n Evaluation}
+    C -->|Compliant| D[✅ CLEAN: No Action Required]
+    C -->|Breach Detected| E{Kill-Switch\n Active?}
     E -->|Yes| F[🟥 BLOCKED: Safety Override]
-    E -->|No| G(Draft Remediation Transaction)
-    G --> H{Are Credentials Funded?}
-    H -->|No| I[🌫️ NON-EXECUTED PROOF]
-    H -->|Yes| J[⚡ EXECUTED: Broadcast On-chain]
+    E -->|No| G(Select Best Swap Offer\n /swap/offers/)
+    G --> H{Dry-Run\n Mode?}
+    H -->|Yes| I[🌫️ NON-EXECUTED PROOF\n Signed TX JSON]
+    H -->|No| J[⚡ EXECUTED: Broadcast Onchain]
+    J --> K[(Append-Only\n Audit Log)]
+    F --> K
+    D --> K
 ```
 
 ---
 
-## 🏆 For Judges: Proof of Correctness & Execution
-
-We have eliminated "demo theater" by providing an authoritative **Judge Trace**, a single-screen proof of the system's internal state machine. 
+## 🏆 For Judges: The Complete Proof of Correctness
 
 ### The Canonical State Machine
-The Guardian evaluates the treasury and guarantees one of four unambiguous outcomes:
-- ✅ **`CLEAN → NO ACTION REQUIRED`**: Treasury is compliant. No remediation needed.
-- ⚡ **`BREACH → EXECUTED`**: A user-defined policy was exceeded; a remedial transaction was broadcast.
-- 🟥 **`BREACH → BLOCKED`**: A policy was exceeded, but execution was arrested by the manual kill-switch or safety guardrail.
-- 🌫️ **`BREACH → NON-EXECUTED PROOF`**: A policy was exceeded and a transaction was drafted/signed, but not broadcast (Simulation/Dry-Run).
 
-### 🔍 Proof of Execution Artifacts
-The Guardian provides deterministic artifacts to prove the system's external actions:
-- **Real Execution (Provable):** When funded, it outputs a cryptographically verifiable transaction: `TX_HASH: 0x5c7b8d... (Track this on Etherscan/Solscan)`
-- **Fallback (Simulation):** In dry-run mode, it produces a transparent proof of intent: `PROOF: NON-EXECUTED PROOF (Signed Transaction JSON)`
+Every evaluation cycle guarantees one of four unambiguous, machine-readable outcomes:
 
----
+| State | Meaning |
+| :--- | :--- |
+| ✅ `CLEAN → NO ACTION REQUIRED` | Treasury is compliant. No remediation needed. |
+| ⚡ `BREACH → EXECUTED` | Policy exceeded; remedial transaction broadcast onchain. |
+| 🟥 `BREACH → BLOCKED` | Policy exceeded; execution arrested by kill-switch or safety guardrail. |
+| 🌫️ `BREACH → NON-EXECUTED PROOF` | Policy exceeded; TX drafted & signed but not broadcast (Dry-Run/Simulation). |
 
-## 🔗 Deep Zerion Tech-Stack Integration
-
-The Guardian natively leverages the full power of the Zerion infrastructure, incorporating bleeding-edge patterns from the `zerion-ai` platform:
-
-*   **x402 Micro-Payments:** Supports the [x402 protocol](https://www.x402.org/) out of the box. No API key needed; agents can execute operations via automated `$0.01 USDC` pay-per-call handshakes.
-*   **Wallet-Set Aggregation (`/wallet-sets/portfolio`):** Intelligently aggregates complex DAO and multi-sig holdings into one logical treasury before evaluating policy drift.
-*   **Ready-to-Sign Swaps (`/swap/offers/`):** Consumes the swap routing API to instantly convert rebalance quotes into fully formed, signable execution intents without a separate building step.
-*   **Transaction Subscriptions (`/tx-subscriptions`):** Deploys persistent webhook monitors that trigger autonomous evaluation cycles the moment relevant on-chain activity occurs.
-
----
-
-## 🚀 Quick Start (The "Grand Finale" Demo)
-
-To see the system in a complete institutional end-to-end flow, run our automated benchmark script. It walks through policy initialization, safety-override proofing, and the final high-fidelity judge trace.
+### Run the Master Judge Trace
 
 ```bash
-# 1. Clone the repository and install dependencies
-git clone https://github.com/THE-VARNA/zerion-ai.git
-cd zerion-ai
-npm install
-
-# 2. Run the definitive Hackathon Demo
-./demo.sh
+zerion treasury judge-path
 ```
 
-> [!NOTE]  
-> The `demo.sh` sequence guarantees a policy breach by applying an aggressive 1% concentration limit. This deliberately forces the Guardian to demonstrate its detection, evaluation, and remediation logic live.
+This single command outputs the end-to-end logic proof: treasury snapshot → policy evaluation → state machine verdict → execution artifact or audit-only fallback.
+
+### Proof of Execution Artifacts
+
+- **Real Execution (Funded):** Outputs a cryptographically verifiable onchain hash:
+  `TX_HASH: 0x5c7b8d... ← verify on Etherscan/Solscan`
+- **Dry-Run Fallback:** Outputs a transparent signed simulation:
+  `PROOF: NON-EXECUTED PROOF (Signed Zerion Swap TX JSON)`
+
+---
+
+## 🔗 Zerion Tech-Stack Integration
+
+The Guardian natively leverages the full Zerion developer infrastructure:
+
+| API Surface | How We Use It |
+| :--- | :--- |
+| **`/wallet-sets/portfolio`** | Aggregates multi-wallet DAO/multi-sig holdings into one logical treasury view |
+| **`/wallet-sets/positions/`** | Fetches live, chain-aware positions to evaluate concentration drift |
+| **`/swap/offers/`** | Converts rebalance intents into ready-to-sign transaction objects in a single call |
+| **`/tx-subscriptions`** | Deploys persistent webhooks to trigger evaluation cycles on live onchain activity |
+| **x402 Protocol** | Full pay-per-call support via [`x402`](https://www.x402.org/). No API key needed — uses `$0.01 USDC` micro-payment handshakes |
 
 ---
 
 ## 🛡️ Key Highlights & Guardrails
 
-| Feature | Institutional Benefit |
+| Feature | Implementation Detail |
 | :--- | :--- |
-| **Chain-Aware Identity** | Uses Zerion chain-aware asset identifiers (CAIP-2) to avoid cross-chain identity collisions across **60+ EVM chains & Solana**. |
-| **Automated Stop-Loss Mitigation** | Actively protects treasury downside by automatically liquidating crashing assets into stablecoins (`USDC`) when they breach a hard price floor. |
-| **Concentration Limits** | Triggers auto-rebalancing when a single asset balloons past its predefined maximum portfolio allocation (e.g., automatically trimming 40% ETH exposure down to 30%). |
-| **Absolute Spend Caps** | Enforces a hard algorithm ceiling on the USD value of any single autonomous rebalance (`spendCapUsd`), mathematically bounding maximum exposure per trade. |
-| **Time-Bounded Policies** | Authorizations feature an exact ISO-8601 expiry timestamp (`expiresAt`), ensuring an abandoned agent cannot blindly trade on stale policies later. |
-| **Poison Payload Prevention** | Safely detects and drops malicious zero-value spam assets, preventing the agent from accidentally liquidating reliable assets into rugpull tokens. |
-| **Fail-Closed Engine** | Inherently pessimistic. Defaults entirely to a `BLOCK` state if API data is malformed, missing, or if policy ambiguity is detected. |
-| **Manual Kill-Switch** | A single-command physical arrest mechanism that can halt the autonomous daemon instantly returning safety to the operator. |
-| **Append-Only Audit Log** | Maintains a persistent, machine-readable JSONL audit log for strict post-event reporting. |
+| **Automated Stop-Loss** | Auto-liquidates crashing assets into USDC when they breach a hard price floor (`triggerPriceUsd`) |
+| **Concentration Limits** | Auto-rebalances when a single asset exceeds its maximum allocation (e.g., trims 40% ETH → 30%) |
+| **Absolute Spend Caps** | Hard algorithmic ceiling on USD value per rebalance cycle (`spendCapUsd`) — mathematically bounds max exposure |
+| **Time-Bounded Policies** | All authorizations carry an ISO-8601 expiry (`expiresAt`) — abandoned agents cannot trade on stale policy |
+| **Poison Payload Prevention** | Detects and drops zero-value/NaN/Infinity spam assets before they enter policy evaluation |
+| **Idempotency Ring Buffer** | UUID per cycle tracked in a 200-entry ring buffer — prevents replay attacks and runaway trade loops |
+| **Exponential Retry Backoff** | API fetches retry up to 3× with 1s → 2s → 4s delays before defaulting to `BLOCKED` |
+| **Fail-Closed Engine** | Any malformed data, API error, or policy ambiguity defaults to `BLOCKED` — never executes speculatively |
+| **System-Level Kill-Switch** | File-based (`~/.zerion/treasury-kill-switch`) zero-latency daemon arrest, verifiable via `ls` |
+| **Append-Only Audit Log** | Every cycle decision, price point, and trade offer recorded to `~/.zerion/treasury-audit.jsonl` |
+| **Chain-Aware Identity (CAIP-2)** | Every asset uniquely identified across 60+ EVM chains & Solana — no cross-chain symbol collisions |
+
+---
+
+## 🚀 Quick Start (The "Grand Finale" Demo)
+
+```bash
+# 1. Clone and install
+git clone https://github.com/THE-VARNA/zerion-ai.git
+cd zerion-ai
+npm install
+
+# 2. Set your Zerion API key
+export ZERION_API_KEY=zk_dev_your_key_here
+
+# 3. Run the definitive hackathon demo
+./demo.sh
+```
+
+> [!NOTE]
+> `demo.sh` applies an aggressive **1% concentration limit** to guarantee a policy breach, forcing the Guardian to demonstrate live detection → evaluation → remediation. The final "Truth Statement" shows whether a real TX hash or a NON-EXECUTED PROOF was produced.
 
 ---
 
 ## 🛠️ Command Reference
 
-Control the autonomous daemon natively from the CLI:
-
 | Command | Purpose |
 | :--- | :--- |
-| `zerion treasury judge-path` | **The Master Trace.** Prints the end-to-end logic proof. Displays the final state machine proof and execution artifact or audit-only fallback. |
-| `zerion treasury status` | View the real-time Guardian Control Room & Audit Log. |
-| `zerion treasury policies` | List current active rules and rebalancing targets. |
-| `zerion treasury kill-switch on/off`| Instantly arrest or resume the autonomous daemon. |
-| `zerion treasury start` | Launch the autonomous daemon for continuous background monitoring. |
-| `zerion treasury trigger` | Manually force an evaluate + execute cycle sequence. |
+| `zerion treasury judge-path` | **The Master Trace.** End-to-end logic proof: state machine verdict + execution artifact. |
+| `zerion treasury trigger [--dry-run]` | Manually force a full evaluate → execute cycle. |
+| `zerion treasury start [--dry-run]` | Launch the autonomous polling daemon. |
+| `zerion treasury evaluate` | Read-only single evaluation cycle (no execution). |
+| `zerion treasury status` | View the live Guardian Control Room & Audit Log. |
+| `zerion treasury policies [--init]` | List or initialize active treasury policies. |
+| `zerion treasury kill-switch on\|off` | Instantly arrest or resume the autonomous daemon. |
+
+---
+
+## ⚙️ Environment Variables
+
+| Variable | Purpose |
+| :--- | :--- |
+| `ZERION_API_KEY` | Standard API key (get one at [developers.zerion.io](https://developers.zerion.io)) |
+| `WALLET_PRIVATE_KEY` | EVM key for x402 pay-per-call (no API key needed) |
+| `TREASURY_WALLET_PASSPHRASE` | Passphrase for local keystore signing during live execution |
+| `TREASURY_POLICY_PATH` | Custom path to `treasury-policy.json` (default: `~/.zerion/treasury-policy.json`) |
 
 ---
 
