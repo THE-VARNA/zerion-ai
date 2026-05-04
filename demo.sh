@@ -8,7 +8,7 @@
 #   export TREASURY_WALLET_PASSPHRASE=your-passphrase
 
 WALLET="0xB78b9025Ca8b06BAE4b390d0E0a9976608D87E6b"
-W=74  # visual inner width of box (columns between the two │ borders)
+W=72  # match the Zerion CLI box width (72 dashes → 74 total including │ borders)
 
 # ─── helpers ──────────────────────────────────────────────────────────────────
 # _bl COLOR TEXT — prints a box row, compensating for multi-byte unicode chars.
@@ -20,8 +20,10 @@ _bl() {
   bytes=$(printf '%s' "$text" | wc -c)
   chars=$(printf '%s' "$text" | wc -m)
   extra=$((bytes - chars))
-  pad=$((W - 2 + extra))
-  printf "\x1b[1m│\x1b[0m  ${color}%-${pad}s\x1b[0m  \x1b[1m│\x1b[0m\n" "$text"
+  # pad = W-4+extra because: 2 spaces before + 2 spaces after = 4 fixed cols.
+  # printf %-Ns pads by BYTES, so add extra=(bytes-chars) to compensate unicode.
+  pad=$((W - 4 + extra))
+  printf "\x1b[1m\u2502\x1b[0m  ${color}%-${pad}s\x1b[0m  \x1b[1m\u2502\x1b[0m\n" "$text"
 }
 
 box_top()    { printf "\x1b[1m┌"; printf '─%.0s' $(seq 1 $W); printf "┐\x1b[0m\n"; }
@@ -41,11 +43,11 @@ section()    { echo -e "\x1b[2m   $1\x1b[0m"; }
 clear
 echo ""
 echo -e "\x1b[1m\x1b[36m"
-echo "  ┌─────────────────────────────────────────────────────────────────────┐"
-echo "  │          ❖  TREASURY GUARDIAN — HACKATHON DEMO                     │"
-echo "  │          Policy-Bounded Autonomous Rebalancer · Zerion Frontier     │"
-echo "  └─────────────────────────────────────────────────────────────────────┘"
-echo -e "\x1b[0m"
+echo "┌────────────────────────────────────────────────────────────────────────┐"
+echo "│          ❖  TREASURY GUARDIAN — HACKATHON DEMO                        │"
+echo "│          Policy-Bounded Autonomous Rebalancer  ·  Zerion Frontier     │"
+echo -e "└────────────────────────────────────────────────────────────────────────┘\x1b[0m"
+echo ""
 echo -e "  \x1b[2mWallet :\x1b[0m \x1b[1m$WALLET\x1b[0m"
 echo -e "  \x1b[2mNetwork:\x1b[0m Polygon Mainnet   \x1b[2mAPI:\x1b[0m Zerion v1"
 echo ""
