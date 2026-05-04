@@ -8,19 +8,32 @@
 #   export TREASURY_WALLET_PASSPHRASE=your-passphrase
 
 WALLET="0xB78b9025Ca8b06BAE4b390d0E0a9976608D87E6b"
-W=74  # box inner width (chars between │ and │)
+W=74  # visual inner width of box (columns between the two │ borders)
 
 # ─── helpers ──────────────────────────────────────────────────────────────────
-box_top()    { echo -e "\x1b[1m┌$(printf '─%.0s' $(seq 1 $W))┐\x1b[0m"; }
-box_sep()    { echo -e "\x1b[1m├$(printf '─%.0s' $(seq 1 $W))┤\x1b[0m"; }
-box_bot()    { echo -e "\x1b[1m└$(printf '─%.0s' $(seq 1 $W))┘\x1b[0m"; }
-box_row()    { printf "\x1b[1m│\x1b[0m  %-$((W-2))s  \x1b[1m│\x1b[0m\n" "$1"; }
-box_title()  { printf "\x1b[1m│\x1b[0m  \x1b[1m%-$((W-2))s\x1b[0m  \x1b[1m│\x1b[0m\n" "$1"; }
-box_dim()    { printf "\x1b[1m│\x1b[0m  \x1b[2m%-$((W-2))s\x1b[0m  \x1b[1m│\x1b[0m\n" "$1"; }
-box_green()  { printf "\x1b[1m│\x1b[0m  \x1b[32m%-$((W-2))s\x1b[0m  \x1b[1m│\x1b[0m\n" "$1"; }
-box_red()    { printf "\x1b[1m│\x1b[0m  \x1b[31m%-$((W-2))s\x1b[0m  \x1b[1m│\x1b[0m\n" "$1"; }
-box_yellow() { printf "\x1b[1m│\x1b[0m  \x1b[33m%-$((W-2))s\x1b[0m  \x1b[1m│\x1b[0m\n" "$1"; }
-box_cyan()   { printf "\x1b[1m│\x1b[0m  \x1b[36m%-$((W-2))s\x1b[0m  \x1b[1m│\x1b[0m\n" "$1"; }
+# _bl COLOR TEXT — prints a box row, compensating for multi-byte unicode chars.
+# printf %-Ns pads by BYTES not columns. Each 3-byte UTF-8 char (✓ → ❖ — etc.)
+# counts as 1 visual column but 3 bytes, so we add (bytes-chars) to the width.
+_bl() {
+  local color="$1" text="$2"
+  local bytes chars extra pad
+  bytes=$(printf '%s' "$text" | wc -c)
+  chars=$(printf '%s' "$text" | wc -m)
+  extra=$((bytes - chars))
+  pad=$((W - 2 + extra))
+  printf "\x1b[1m│\x1b[0m  ${color}%-${pad}s\x1b[0m  \x1b[1m│\x1b[0m\n" "$text"
+}
+
+box_top()    { printf "\x1b[1m┌"; printf '─%.0s' $(seq 1 $W); printf "┐\x1b[0m\n"; }
+box_sep()    { printf "\x1b[1m├"; printf '─%.0s' $(seq 1 $W); printf "┤\x1b[0m\n"; }
+box_bot()    { printf "\x1b[1m└"; printf '─%.0s' $(seq 1 $W); printf "┘\x1b[0m\n"; }
+box_row()    { _bl ""         "$1"; }
+box_title()  { _bl "\x1b[1m"  "$1"; }
+box_dim()    { _bl "\x1b[2m"  "$1"; }
+box_green()  { _bl "\x1b[32m" "$1"; }
+box_red()    { _bl "\x1b[31m" "$1"; }
+box_yellow() { _bl "\x1b[33m" "$1"; }
+box_cyan()   { _bl "\x1b[36m" "$1"; }
 phase()      { echo -e "\n\x1b[1m\x1b[36m╔══ $1 \x1b[0m"; }
 section()    { echo -e "\x1b[2m   $1\x1b[0m"; }
 
@@ -183,9 +196,9 @@ echo ""
 # Final Truth Statement
 TX_HASH_FINAL=$(echo "$RAW" | grep -o '"txHash":"0x[0-9a-fA-F]\{64\}"' | sed 's/"txHash":"//;s/"//')
 if [ -n "$TX_HASH_FINAL" ]; then
-  ONCHAIN="✅  EXECUTED  ·  $TX_HASH_FINAL"
+  ONCHAIN="[OK] EXECUTED on-chain  |  $TX_HASH_FINAL"
 else
-  ONCHAIN="⬜  NON-EXECUTED PROOF  (live trigger not run in this script)"
+  ONCHAIN="[ ] NOT YET EXECUTED   |  run: treasury trigger"
 fi
 
 echo ""
