@@ -42,7 +42,7 @@ cat <<EOF > ~/.zerion/treasury-policy.json
     }
   ],
   "allowedChains": ["polygon"],
-  "spendCapUsd": 1,
+  "spendCapUsd": 2.50,
   "slippagePercent": 5,
   "expiresAt": "2026-12-31T23:59:59Z"
 }
@@ -78,10 +78,11 @@ echo -e "\x1b[2mAssets identified by fungible_id + chain_id (not just symbol):\x
 node cli/zerion.js treasury status
 
 # ─── Final Truth Statement ────────────────────────────────────────────────────
-HAS_HASH=$(echo "$TRACE_OUT" | grep -o "0x[0-9a-fA-F]\{40,64\}" | head -1 || true)
+# Only match 64-char tx hashes — NOT 40-char wallet addresses
+HAS_HASH=$(echo "$TRACE_OUT" | grep -o "0x[0-9a-fA-F]\{64\}" | head -1 || true)
 REAL_ACTION="NON-EXECUTED PROOF (dry-run)"
 if [ -n "$HAS_HASH" ]; then
-    REAL_ACTION="CONFIRMED ON-CHAIN HASH: $HAS_HASH"
+    REAL_ACTION="✅ CONFIRMED ON-CHAIN HASH: $HAS_HASH"
 fi
 
 echo -e "\n\x1b[1m┌────────────────────────────────────────────────────────────────────────┐\x1b[0m"
