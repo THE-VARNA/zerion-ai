@@ -16,6 +16,7 @@
 import * as api from "../api/client.js";
 import { validateExecution } from "./policy-engine.js";
 import { logAuditEvent } from "./audit-log.js";
+import { retryWithBackoff } from "./safety.js";
 
 /**
  * Zerion swap API requires specific fungible IDs (UUIDs or contract addresses),
@@ -136,10 +137,20 @@ export async function selectBestOffer({ breach, walletAddress, config, ctx }) {
     return null;
   }
 
-  // Fetch offers from Zerion
+  // Fetch offers from Zerion with retry — swap API can 429 after rapid portfolio fetches.
+  // 1s pre-delay reduces collision with the just-completed positions API call.
   let response;
   try {
-    response = await api.getSwapOffers(params);
+    await new Promise((r) => setTimeout(r, 1000));
+    response = await retryWithBackoff(
+      () => api.getSwapOffers(params),
+      {
+        maxRetries: 3,
+        baseDelayMs: 2000,
+        onRetry: (attempt, err) =>
+          logAuditEvent("offer_retry", { attempt, error: err.message }, ctx),
+      }
+    );
   } catch (err) {
     logAuditEvent("offer_fetch_error", { error: err.message }, ctx);
     return null;
