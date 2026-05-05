@@ -18,6 +18,28 @@ import { validateExecution } from "./policy-engine.js";
 import { logAuditEvent } from "./audit-log.js";
 
 /**
+ * Zerion swap API requires specific fungible IDs (UUIDs or contract addresses),
+ * not human-readable names from the policy config.
+ * The sell asset ID comes from the actual position data (breach.sellFungibleId).
+ * The buy asset is mapped here for common stablecoins.
+ */
+const BUY_FUNGIBLE_IDS = {
+  // USDC (native) — Polygon address: 0x3c499c542cef5e3811e1192ce70d8cc03d5c3359
+  usdc:   "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  // USDC.e (bridged) — Polygon address: 0x2791bca1f2de4661ed88a30c99a7a9449aa84174
+  "usdc.e": "6560e418-690a-47e3-8745-c5e3f9f968fa",
+  usdt:   "0xdac17f958d2ee523a2206206994597c13d831ec7",
+  dai:    "0x6b175474e89094c44da98b954eedeac495271d0f",
+  weth:   "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  eth:    "eth",
+  matic:  "7560001f-9b6d-4115-b14a-6c44c4334ef2",
+  pol:    "7560001f-9b6d-4115-b14a-6c44c4334ef2",
+};
+
+// Zerion swap API enforces slippage_percent <= 3
+const MAX_SLIPPAGE_PERCENT = 3;
+
+/**
  * Fetch and select the best swap offer for a rebalance action.
  *
  * @param {object} params
@@ -51,16 +73,20 @@ export async function selectBestOffer({ breach, walletAddress, config, ctx }) {
     return { blocked: true, reasons: precheck.reasons };
   }
 
-  // Build swap offer request params
-  // We need to estimate the token amount from USD value
-  // First, get the positions to find the asset's current price
+  // Build swap offer request params using actual Zerion fungible IDs.
+  // The sell ID comes from the position data embedded by policy-engine (breach.sellFungibleId).
+  // The buy ID is mapped from the policy config name to the Zerion ID.
+  const sellFungibleId = breach.sellFungibleId || BUY_FUNGIBLE_IDS[rebalance.sellAsset] || rebalance.sellAsset;
+  const buyFungibleId  = BUY_FUNGIBLE_IDS[rebalance.buyAsset]  || rebalance.buyAsset;
+  const slippage = Math.min(config.slippagePercent || 2, MAX_SLIPPAGE_PERCENT);
+
   const params = {
     "input[from]": walletAddress,
     "input[chain_id]": rebalance.sourceChain,
-    "input[fungible_id]": rebalance.sellAsset,
+    "input[fungible_id]": sellFungibleId,
     "output[chain_id]": rebalance.buyChain || rebalance.sourceChain,
-    "output[fungible_id]": rebalance.buyAsset,
-    slippage_percent: config.slippagePercent || 2,
+    "output[fungible_id]": buyFungibleId,
+    slippage_percent: slippage,
     sort: "amount",
   };
 

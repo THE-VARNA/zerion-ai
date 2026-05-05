@@ -166,6 +166,9 @@ function evaluateConcentrationLimit(policy, positions, totalValue, breaches) {
       (largestPosition?.attributes?.fungible_info?.implementations || [])[0];
     const decimals = impl?.decimals ?? 18;
 
+    const sellFungibleId =
+      largestPosition?.relationships?.fungible?.data?.id || asset;
+
     breaches.push({
       policy: "concentration_limit",
       reason: `${asset} is ${actualPercent.toFixed(1)}% of portfolio (limit: ${maxPercent}%)`,
@@ -177,6 +180,7 @@ function evaluateConcentrationLimit(policy, positions, totalValue, breaches) {
       priceUsd,
       quantityFloat: totalQuantity,
       decimals,
+      sellFungibleId,
       action: "rebalance",
       rebalance: {
         sellAsset: asset,
