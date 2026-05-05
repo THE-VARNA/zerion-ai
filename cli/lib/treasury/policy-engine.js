@@ -152,6 +152,20 @@ function evaluateConcentrationLimit(policy, positions, totalValue, breaches) {
     )[0];
     const sourceChain = largestPosition?.relationships?.chain?.data?.id || "ethereum";
 
+    // Extract price, quantity and decimals from already-fetched position data.
+    // This avoids a separate getFungible API call in offer-router (which can hit 429).
+    const totalQuantity = matching.reduce(
+      (sum, p) => sum + (p.attributes?.quantity?.float || 0), 0
+    );
+    const priceUsd =
+      largestPosition?.attributes?.price ||
+      (totalQuantity > 0 ? assetValue / totalQuantity : null);
+    const impl =
+      (largestPosition?.attributes?.fungible_info?.implementations || [])
+        .find((i) => i.chain_id === sourceChain) ||
+      (largestPosition?.attributes?.fungible_info?.implementations || [])[0];
+    const decimals = impl?.decimals ?? 18;
+
     breaches.push({
       policy: "concentration_limit",
       reason: `${asset} is ${actualPercent.toFixed(1)}% of portfolio (limit: ${maxPercent}%)`,
@@ -160,6 +174,9 @@ function evaluateConcentrationLimit(policy, positions, totalValue, breaches) {
       actualPercent: Math.round(actualPercent * 100) / 100,
       threshold: maxPercent,
       excessValueUsd: Math.round(excessValue * 100) / 100,
+      priceUsd,
+      quantityFloat: totalQuantity,
+      decimals,
       action: "rebalance",
       rebalance: {
         sellAsset: asset,

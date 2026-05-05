@@ -64,21 +64,34 @@ export async function selectBestOffer({ breach, walletAddress, config, ctx }) {
     sort: "amount",
   };
 
-  // Calculate input amount from USD value and price
-  // We need to estimate the amount — the policy engine gives us USD
-  // We'll use the position data to derive the price per unit
-  if (breach.assetValue && breach.actualPercent) {
-    // Estimate token amount: excessUSD / (assetValue / quantity)
-    // But we don't have quantity here, so use a simpler approach:
-    // Fetch the fungible to get the price per token
+  // Calculate input token amount from the USD sell target.
+  // Priority — avoids extra API calls which can hit 429 rate limits:
+  //   1. breach.priceUsd      — price embedded by policy-engine from position data (fastest)
+  //   2. assetValue/quantity  — derived price from position totals (no API call)
+  //   3. getFungible()        — last-resort API call if no position price available
+  const decimals = breach.decimals ?? 18;
+
+  if (breach.priceUsd && breach.priceUsd > 0) {
+    // Fast path: policy-engine already extracted price from fetched positions
+    const tokenAmount = rebalance.sellAmountUsd / breach.priceUsd;
+    const rawAmount = BigInt(Math.floor(tokenAmount * Math.pow(10, decimals)));
+    params["input[amount]"] = rawAmount.toString();
+  } else if (breach.quantityFloat > 0 && breach.assetValue > 0) {
+    // Derived path: compute price from USD value / token quantity
+    const derivedPrice = breach.assetValue / breach.quantityFloat;
+    const tokenAmount = rebalance.sellAmountUsd / derivedPrice;
+    const rawAmount = BigInt(Math.floor(tokenAmount * Math.pow(10, decimals)));
+    params["input[amount]"] = rawAmount.toString();
+  } else {
+    // Fallback: call getFungible — may 429 under rate limits
     try {
       const fungible = await api.getFungible(rebalance.sellAsset);
       const price = fungible?.data?.attributes?.market_data?.price;
       if (price && price > 0) {
         const tokenAmount = rebalance.sellAmountUsd / price;
-        const decimals = fungible?.data?.attributes?.implementations?.[0]?.decimals || 18;
-        // Convert to smallest units
-        const rawAmount = BigInt(Math.floor(tokenAmount * Math.pow(10, decimals)));
+        const fallbackDecimals =
+          fungible?.data?.attributes?.implementations?.[0]?.decimals || 18;
+        const rawAmount = BigInt(Math.floor(tokenAmount * Math.pow(10, fallbackDecimals)));
         params["input[amount]"] = rawAmount.toString();
       }
     } catch (err) {
@@ -89,7 +102,7 @@ export async function selectBestOffer({ breach, walletAddress, config, ctx }) {
     }
   }
 
-  // If we couldn't calculate amount, we can't proceed
+  // If we still couldn't calculate amount, we cannot proceed
   if (!params["input[amount]"]) {
     logAuditEvent("offer_failed", {
       reason: "Could not calculate input amount for swap",
