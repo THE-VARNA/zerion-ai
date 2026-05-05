@@ -9,14 +9,14 @@ export default async function portfolio(args, flags) {
   const { walletName, address } = await resolveAddressOrWallet(args, flags);
 
   try {
-    const [portfolioRes, positionsRes] = await Promise.all([
-      api.getPortfolio(address, { useX402 }),
-      api.getPositions(address, {
-        chainId: flags.chain,
-        positionFilter: "only_simple",
-        useX402,
-      }),
-    ]);
+    // Zerion demo tier: 1 req/sec — fetch sequentially with a gap
+    const portfolioRes = await api.getPortfolio(address, { useX402 });
+    await new Promise((r) => setTimeout(r, 1200));
+    const positionsRes = await api.getPositions(address, {
+      chainId: flags.chain,
+      positionFilter: "only_simple",
+      useX402,
+    });
 
     const total = portfolioRes.data?.attributes?.total?.positions ?? 0;
     const change24h =

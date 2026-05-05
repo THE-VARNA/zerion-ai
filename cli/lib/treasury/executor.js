@@ -47,25 +47,26 @@ export async function runEvaluation(options = {}) {
 
   logAuditEvent("evaluation_started", { addresses, policies: config.policies.length }, ctx);
 
-  // Fetch portfolio + positions with timeout + retry
-  const [portfolioRes, positionsRes] = await Promise.all([
-    retryWithBackoff(
-      () => withTimeout(
-        api.getWalletSetPortfolio(addresses),
-        DATA_TIMEOUT_MS,
-        "portfolio fetch"
-      ),
-      { maxRetries: 2, onRetry: (a, e) => logAuditEvent("retry", { target: "portfolio", attempt: a, error: e.message }, ctx) }
+  // NOTE: Zerion demo API tier enforces 1 request/second.
+  // Fetch portfolio then positions sequentially with a gap to avoid 429.
+  const portfolioRes = await retryWithBackoff(
+    () => withTimeout(
+      api.getWalletSetPortfolio(addresses),
+      DATA_TIMEOUT_MS,
+      "portfolio fetch"
     ),
-    retryWithBackoff(
-      () => withTimeout(
-        api.getWalletSetPositions(addresses),
-        DATA_TIMEOUT_MS,
-        "positions fetch"
-      ),
-      { maxRetries: 2, onRetry: (a, e) => logAuditEvent("retry", { target: "positions", attempt: a, error: e.message }, ctx) }
+    { maxRetries: 3, baseDelayMs: 2000, onRetry: (a, e) => logAuditEvent("retry", { target: "portfolio", attempt: a, error: e.message }, ctx) }
+  );
+  await new Promise((r) => setTimeout(r, 1200)); // 1.2s gap — safely within 1 req/sec limit
+  const positionsRes = await retryWithBackoff(
+    () => withTimeout(
+      api.getWalletSetPositions(addresses),
+      DATA_TIMEOUT_MS,
+      "positions fetch"
     ),
-  ]);
+    { maxRetries: 3, baseDelayMs: 2000, onRetry: (a, e) => logAuditEvent("retry", { target: "positions", attempt: a, error: e.message }, ctx) }
+  );
+
 
   const totalValue = portfolioRes?.data?.attributes?.total?.positions || 0;
   let positions = positionsRes?.data || [];
