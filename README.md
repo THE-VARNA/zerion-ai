@@ -62,8 +62,9 @@ This single command outputs the end-to-end logic proof: treasury snapshot → po
 
 ### Proof of Execution Artifacts
 
-- **Real Execution (Funded):** Outputs a cryptographically verifiable onchain hash:
-  `TX_HASH: 0x5c7b8d... ← verify on Etherscan/Solscan`
+- **Real Execution (Funded):** Outputs a cryptographically verifiable onchain hash.
+  - **Live Demo Transaction:** [0xd6ca6078edb1f82f44ab715be8858c308af072c2fdfc778b9e15ff2c55e1e1a4](https://polygonscan.com/tx/0xd6ca6078edb1f82f44ab715be8858c308af072c2fdfc778b9e15ff2c55e1e1a4)
+  - **Live Treasury Wallet:** [0xb78b...87e6b](https://polygonscan.com/address/0xb78b9025ca8b06bae4b390d0e0a9976608d87e6b)
 - **Dry-Run Fallback:** Outputs a transparent signed simulation:
   `PROOF: NON-EXECUTED PROOF (Signed Zerion Swap TX JSON)`
 
