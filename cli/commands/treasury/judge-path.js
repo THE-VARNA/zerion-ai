@@ -36,9 +36,19 @@ export default async function treasuryJudgePath(args, flags) {
         stateColor = "\x1b[33m";
       } else if (res.evaluation?.passed === false) {
         const results = res.results || [];
-        const hasExec = results.some(r => r.status === "executed" || (r.dryRun && r.offer));
-        finalState = hasExec ? "BREACH → EXECUTED" : "BREACH → BLOCKED";
-        stateColor = hasExec ? "\x1b[32m" : "\x1b[31m";
+        const isExecuted = results.some(r => r.status === "executed");
+        const isDryRunProof = results.some(r => r.dryRun && r.offer);
+        
+        if (isExecuted) {
+          finalState = "BREACH → EXECUTED";
+          stateColor = "\x1b[32m";
+        } else if (isDryRunProof) {
+          finalState = "BREACH → NON-EXECUTED PROOF";
+          stateColor = "\x1b[36m";
+        } else {
+          finalState = "BREACH → BLOCKED";
+          stateColor = "\x1b[31m";
+        }
       }
 
       let out = "";

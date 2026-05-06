@@ -104,23 +104,36 @@ The Guardian natively leverages the full Zerion developer infrastructure:
 
 ---
 
-## 🚀 Quick Start (The "Grand Finale" Demo)
+## 🧑‍⚖️ For Judges: How to Test and Follow
 
+We have made it incredibly easy for you to run the Treasury Guardian locally on your machine and verify the deterministic logic yourself, **without needing any private keys**.
+
+### Step 1: Clone and Install
 ```bash
-# 1. Clone and install
 git clone https://github.com/THE-VARNA/zerion-ai.git
 cd zerion-ai
 npm install
+```
 
-# 2. Set your Zerion API key
+### Step 2: Set your API Key
+You only need a Zerion API key to run the simulation (get one at [developers.zerion.io](https://developers.zerion.io)).
+```bash
 export ZERION_API_KEY=zk_dev_your_key_here
+```
 
-# 3. Run the definitive hackathon demo
+### Step 3: Run the Automated Dry-Run Demo
+We created a safe, automated simulation script that proves the state machine works perfectly without spending any real money.
+```bash
 ./demo.sh
 ```
 
-> [!NOTE]
-> `demo.sh` applies an aggressive **1% concentration limit** to guarantee a policy breach, forcing the Guardian to demonstrate live detection → evaluation → remediation. The final "Truth Statement" shows whether a real TX hash or a NON-EXECUTED PROOF was produced.
+**What you will see:**
+1. **Live Portfolio:** Fetches real assets using the Zerion API.
+2. **The Kill-Switch:** Proves that if safety locks are engaged, execution is instantly blocked (`BREACH → BLOCKED`).
+3. **The Master Trace:** Evaluates the policy, detects a concentration limit breach, and generates a signed transaction proof (`BREACH → NON-EXECUTED PROOF`).
+4. **The Audit Log:** Proves that every decision was permanently written to an append-only ledger.
+
+*(To see a real, live on-chain execution with our funded wallet, please watch our demo video or see the transaction hash linked above!)*
 
 ---
 

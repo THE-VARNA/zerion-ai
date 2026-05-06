@@ -57,9 +57,9 @@ cat <<EOF > ~/.zerion/treasury-policy.json
 {
   "walletSet": { "evmAddress": "$WALLET", "solanaAddress": null },
   "policies": [
-    { "type": "concentration_limit", "maxPercent": 1, "asset": "usdc",
-      "rebalanceTarget": 0.5, "rebalanceTo": "pol", "rebalanceToChain": "polygon" },
-    { "type": "stop_loss", "asset": "usdc", "triggerPriceUsd": 0.001, "sellTo": "pol" }
+    { "type": "concentration_limit", "maxPercent": 1, "asset": "pol",
+      "rebalanceTarget": 0.5, "rebalanceTo": "usdc", "rebalanceToChain": "polygon" },
+    { "type": "stop_loss", "asset": "pol", "triggerPriceUsd": 0.001, "sellTo": "usdc" }
   ],
   "allowedChains": ["polygon"],
   "spendCapUsd": 2.50,
@@ -135,7 +135,7 @@ box_row  "   Expiry       : 2026-12-31T23:59:59Z (time-bounded)"
 box_sep
 box_dim  "[2] PORTFOLIO SNAPSHOT  (Live Zerion API)"
 box_row  "   Total Value  : \$$TOTAL"
-box_row  "   Positions    : 2  (USDC, POL on Polygon)"
+box_row  "   Positions    : 2  (POL, USDC on Polygon)"
 box_row  "   API Endpoint : /v1/wallet-sets/portfolio?addresses=..."
 box_sep
 box_dim  "[3] POLICY ENGINE  (Deterministic Core)"
@@ -144,7 +144,7 @@ if [ "$PASSED" = "true" ]; then
 else
   box_red   "   Breach  : [!!] $BREACH_POLICY"
   box_row   "   Reason  : $BREACH_REASON"
-  box_row   "   Action  : Sell \$$SELL_USD of USDC -> POL on Polygon"
+  box_row   "   Action  : Sell \$$SELL_USD of POL -> USDC on Polygon"
 fi
 box_sep
 box_dim  "[4] EXECUTION OUTCOME"
