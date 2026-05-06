@@ -62,6 +62,8 @@ This single command outputs the end-to-end logic proof: treasury snapshot → po
 
 ### Proof of Execution Artifacts
 
+<img width="911" height="56" alt="image" src="https://github.com/user-attachments/assets/6bd45c06-7e51-401b-a110-1df929aebf59" />
+
 - **Real Execution (Funded):** Outputs a cryptographically verifiable onchain hash.
   - **Live Demo Transaction:** [0xd6ca6078edb1f82f44ab715be8858c308af072c2fdfc778b9e15ff2c55e1e1a4](https://polygonscan.com/tx/0xd6ca6078edb1f82f44ab715be8858c308af072c2fdfc778b9e15ff2c55e1e1a4)
   - **Live Treasury Wallet:** [0xb78b...87e6b](https://polygonscan.com/address/0xb78b9025ca8b06bae4b390d0e0a9976608d87e6b)
