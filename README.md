@@ -137,17 +137,62 @@ We created a safe, automated simulation script that proves the state machine wor
 
 ---
 
-## 🛠️ Command Reference
+## 🛠️ Detailed Command Reference
 
-| Command | Purpose |
-| :--- | :--- |
-| `zerion treasury judge-path` | **The Master Trace.** End-to-end logic proof: state machine verdict + execution artifact. |
-| `zerion treasury trigger [--dry-run]` | Manually force a full evaluate → execute cycle. |
-| `zerion treasury start [--dry-run]` | Launch the autonomous polling daemon. |
-| `zerion treasury evaluate` | Read-only single evaluation cycle (no execution). |
-| `zerion treasury status` | View the live Guardian Control Room & Audit Log. |
-| `zerion treasury policies [--init]` | List or initialize active treasury policies. |
-| `zerion treasury kill-switch on\|off` | Instantly arrest or resume the autonomous daemon. |
+We built the CLI to be incredibly simple and easy to use. Here is exactly what each command does, step-by-step:
+
+### 1. View Your Policies
+```bash
+node cli/zerion.js treasury policies
+```
+**What it does:** Shows you the exact safety rules the agent is following (like your 1% concentration limit and $2.50 spend cap). It proves the agent is bounded by strict math.
+
+### 2. Check the Live Portfolio
+```bash
+node cli/zerion.js portfolio <YOUR_WALLET_ADDRESS>
+```
+**What it does:** Fetches your live wallet balances from the Zerion API. Use this to easily check if any of your tokens are currently breaching your safety limits.
+
+### 3. Generate the Judge Trace
+```bash
+node cli/zerion.js treasury judge-path
+```
+**What it does:** This is the ultimate proof command. It runs a full, dry-run simulation of the policy engine and prints out the final deterministic state (e.g., `CLEAN`, `EXECUTED`, or `BLOCKED`). It does not spend any real money.
+
+### 4. Execute a Live Autonomous Trade
+```bash
+node cli/zerion.js treasury trigger
+```
+**What it does:** Turns the Guardian on in LIVE mode. It will detect any policy breaches, fetch a live swap route, securely sign the transaction, and broadcast it to the blockchain. **Warning: This will execute real trades.**
+*(Tip: Add `--dry-run` to the end of this command to safely test it first).*
+
+### 5. Use the Hardware Kill-Switch
+```bash
+node cli/zerion.js treasury kill-switch on
+node cli/zerion.js treasury kill-switch off
+```
+**What it does:** The ultimate safety net. Turning the kill-switch `on` instantly arrests the agent and prevents it from doing anything, even if a breach is detected. Turning it `off` arms the Guardian again.
+
+### 6. View the Audit Log
+```bash
+node cli/zerion.js treasury status
+```
+**What it does:** Opens the Guardian Control Room to show you the append-only audit log. Every single decision the agent has ever made is permanently recorded here for institutional compliance.
+
+---
+
+## 🧪 Running the Test Suite
+
+We believe in rigorous safety. We have written a comprehensive suite of unit and integration tests covering the policy engine, security edge cases, safety guardrails, and CLI routing.
+
+To run the full test suite locally:
+```bash
+npm test
+```
+**What it tests:**
+- `treasury-policy.test.mjs`: Ensures policies correctly trigger and enforce mathematically sound rebalance amounts.
+- `treasury-safety.test.mjs`: Validates that the kill-switch and fail-closed logic correctly block execution.
+- `treasury-security-edge.test.mjs`: Tests extreme edge cases (like zero-value tokens, infinite slippage, and malformed config files) to guarantee the engine never panics or executes bad trades.
 
 ---
 
